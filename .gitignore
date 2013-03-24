@@ -3,3 +3,4 @@
 *.o
 *.hi
 main
+.DS_Store
