@@ -24,10 +24,13 @@ Proof with eauto.
   destruct b; simpl; destruct b1; try destruct b0; try reflexivity.
 Qed.
 
-Theorem lbool_merge_comm : forall (b1 b2 : bool),
-  lbool_merge (LBool b1) (LBool b2) = lbool_merge (LBool b2) (LBool b1).
+Theorem lbool_merge_comm : forall (lb1 lb2 : lbool),
+  lbool_merge lb1 lb2 = lbool_merge lb2 lb1.
 Proof with eauto.
-  induction b1; induction b2...
+  induction lb1; induction lb2...
+  unfold lbool_merge; unfold orb.
+  destruct b; destruct b0...
+Qed.
 Qed.
 
 Inductive lmax : Type :=
