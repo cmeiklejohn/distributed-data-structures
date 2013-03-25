@@ -5,7 +5,7 @@ Require Export Sets.Ensembles.
 
 (** Bounded join-semilattices. *)
 
-Module Lattice.
+Module SemiLattice.
 
 (** Boolean lattice. *)
 
@@ -20,11 +20,11 @@ Definition lbool_merge lb1 lb2 :=
   end.
 
 Theorem lbool_merge_assoc : forall (lb1 lb2 lb3 : lbool),
-  lbool_merge (lbool_merge lb1 lb2) lb3 = 
+  lbool_merge (lbool_merge lb1 lb2) lb3 =
     lbool_merge lb3 (lbool_merge lb1 lb2).
 Proof with eauto.
   induction lb1; induction lb2; induction lb3...
-  unfold lbool_merge; unfold orb.  
+  unfold lbool_merge; unfold orb.
   destruct b; simpl; destruct b1; try destruct b0; try reflexivity.
 Qed.
 
@@ -57,7 +57,7 @@ Qed.
 Theorem lmax_merge_comm : forall (lm1 lm2 : lmax),
   lmax_merge lm1 lm2 = lmax_merge lm2 lm1.
 Proof with eauto.
-  induction lm1; induction lm2....
+  induction lm1; induction lm2...
   try unfold lmax_merge; rewrite max_comm...
 Qed.
 
@@ -88,18 +88,4 @@ Proof with eauto.
   try unfold lmin_merge; rewrite min_comm...
 Qed.
 
-(** Set lattice *)
-
-Inductive lset : Type :=
-  LSet : forall (x : Type), Ensemble x -> lset.
-
-Eval compute in LSet nat (Empty_set nat).
-
-Hint Constructors lset.
-
-Definition lset_merge (x : Type) ls1 ls2 :=
-  match (ls1, ls2) with
-    (LSet x1 s1, LSet x2 s2) => (LSet (Union x1 s1 s2))
-  end.
-
-End Lattice.
+End SemiLattice.

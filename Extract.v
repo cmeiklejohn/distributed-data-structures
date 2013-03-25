@@ -1,5 +1,5 @@
-Require Export Lattice.
+Require Export SemiLattice.
 
 Extraction Language Haskell.
 
-Recursive Extraction Library Lattice.
+Recursive Extraction Library SemiLattice.
