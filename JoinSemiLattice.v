@@ -31,6 +31,11 @@ Proof with eauto.
   unfold lbool_merge; unfold orb.
   destruct b; destruct b0...
 Qed.
+
+Theorem lbool_merge_idemp : forall (lb : lbool),
+  lbool_merge lb lb = lb.
+Proof with eauto.
+  induction lb; unfold lbool_merge; unfold orb; destruct b...
 Qed.
 
 Inductive lmax : Type :=
