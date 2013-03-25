@@ -1,6 +1,7 @@
 Require Export SfLib.
 Require Export Max.
 Require Export Min.
+Require Export Sets.Ensembles.
 
 (** Bounded join-semilattices. *)
 
@@ -84,5 +85,19 @@ Proof with eauto.
   induction n1; induction n2...
   try unfold lmin_merge; rewrite min_comm...
 Qed.
+
+(** Set lattice *)
+
+Inductive lset : Type :=
+  LSet : forall (x : Type), Ensemble x -> lset.
+
+Eval compute in LSet nat (Empty_set nat).
+
+Hint Constructors lset.
+
+Definition lset_merge (x : Type) ls1 ls2 :=
+  match (ls1, ls2) with
+    (LSet x1 s1, LSet x2 s2) => (LSet (Union x1 s1 s2))
+  end.
 
 End Lattice.
