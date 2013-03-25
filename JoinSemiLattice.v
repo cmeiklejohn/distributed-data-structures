@@ -94,4 +94,10 @@ Proof with eauto.
   try unfold lmin_merge; rewrite min_comm...
 Qed.
 
+Theorem lmin_merge_idemp : forall (lm : lmin),
+  lmin_merge lm lm = lm.
+Proof with eauto.
+  induction lm; unfold lmin_merge; simpl; rewrite min_idempotent...
+Qed.
+
 End JoinSemiLattice.
