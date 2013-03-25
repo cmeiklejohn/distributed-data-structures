@@ -63,6 +63,12 @@ Proof with eauto.
   try unfold lmax_merge; rewrite max_comm...
 Qed.
 
+Theorem lmax_merge_idemp : forall (lm : lmax),
+  lmax_merge lm lm = lm.
+Proof with eauto.
+  induction lm; unfold lmax_merge; simpl; rewrite max_idempotent...
+Qed.
+
 Inductive lmin : Type :=
   LMin : nat -> lmin.
 
