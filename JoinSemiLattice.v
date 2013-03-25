@@ -3,11 +3,7 @@ Require Export Max.
 Require Export Min.
 Require Export Sets.Ensembles.
 
-(** Bounded join-semilattices. *)
-
-Module SemiLattice.
-
-(** Boolean lattice. *)
+Module JoinSemiLattice.
 
 Inductive lbool : Type :=
   LBool : bool -> lbool.
@@ -34,8 +30,6 @@ Proof with eauto.
   induction b1; induction b2...
 Qed.
 
-(** Max value lattice *)
-
 Inductive lmax : Type :=
   LMax : nat -> lmax.
 
@@ -60,8 +54,6 @@ Proof with eauto.
   induction lm1; induction lm2...
   try unfold lmax_merge; rewrite max_comm...
 Qed.
-
-(** Min value lattice *)
 
 Inductive lmin : Type :=
   LMin : nat -> lmin.
@@ -88,4 +80,4 @@ Proof with eauto.
   try unfold lmin_merge; rewrite min_comm...
 Qed.
 
-End SemiLattice.
+End JoinSemiLattice.

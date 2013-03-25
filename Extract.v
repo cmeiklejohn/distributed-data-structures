@@ -1,5 +1,5 @@
-Require Export SemiLattice.
+Require Export JoinSemiLattice.
 
 Extraction Language Haskell.
 
-Recursive Extraction Library SemiLattice.
+Recursive Extraction Library JoinSemiLattice.

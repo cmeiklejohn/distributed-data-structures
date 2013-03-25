@@ -7,17 +7,17 @@ import Test.QuickCheck
 import Test.QuickCheck.All
 
 -- Quickcheck configuration
-import SemiLattice
+import JoinSemiLattice
 import Control.Monad
 import Datatypes
 
-deriving instance Prelude.Show SemiLattice__Coq_lbool
-deriving instance Prelude.Eq SemiLattice__Coq_lbool
+deriving instance Prelude.Show JoinSemiLattice__Coq_lbool
+deriving instance Prelude.Eq JoinSemiLattice__Coq_lbool
 
 deriving instance Prelude.Show Datatypes.Coq_nat
 deriving instance Prelude.Eq Datatypes.Coq_nat
 
-instance Arbitrary SemiLattice__Coq_lbool where
+instance Arbitrary JoinSemiLattice__Coq_lbool where
   arbitrary = oneof [return Coq_true, return Coq_false]
 
 instance Arbitrary Datatypes.Coq_nat where
@@ -36,13 +36,13 @@ binMergeCommutative f x y = f x y == f y x
 prop_BoolMerge = binMergeCommutative (||)
 
 -- Boolean lattice
-prop_LBoolMerge = binMergeCommutative _SemiLattice__lbool_merge
+prop_LBoolMerge = binMergeCommutative _JoinSemiLattice__lbool_merge
 
 -- Max lattice
-prop_LMaxMerge = binMergeCommutative _SemiLattice__lmax_merge
+prop_LMaxMerge = binMergeCommutative _JoinSemiLattice__lmax_merge
 
 -- Main lattice
-prop_LMinMerge = binMergeCommutative _SemiLattice__lmin_merge
+prop_LMinMerge = binMergeCommutative _JoinSemiLattice__lmin_merge
 
 -- Test
 runTests = $quickCheckAll
