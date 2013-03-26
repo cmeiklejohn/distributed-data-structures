@@ -13,18 +13,18 @@ Inductive lbool : Type :=
 
 Hint Constructors lbool.
 
+Definition lbool_reveal lb :=
+  match lb with
+    | LBoolBottom => false
+    | LBoolValue b => b
+  end.
+
 Definition lbool_merge lb1 lb2 :=
   match (lb1, lb2) with
     | (LBoolBottom, LBoolBottom) => LBoolBottom
     | (LBoolBottom, LBoolValue b2) => (LBoolValue b2)
     | (LBoolValue b1, LBoolBottom) => (LBoolValue b1)
     | (LBoolValue b1, LBoolValue b2) => (LBoolValue (orb b1 b2))
-  end.
-
-Definition lbool_reveal lb :=
-  match lb with
-    | LBoolBottom => false
-    | LBoolValue b => b
   end.
 
 Theorem lbool_merge_assoc : forall (lb1 lb2 lb3 : lbool),
@@ -55,34 +55,45 @@ Proof with eauto.
 Qed.
 
 Inductive lmax : Type :=
-  LMax : nat -> lmax.
+  | LMaxBottom : lmax
+  | LMaxValue: forall (n : nat), lmax.
 
 Hint Constructors lmax.
 
+Definition lmax_reveal (lm : lmax) :=
+  match lm with
+    | LMaxBottom => 0
+    | LMaxValue n => 0
+  end.
+
 Definition lmax_merge lm1 lm2 :=
   match (lm1, lm2) with
-    (LMax n1, LMax n2) => (LMax (max n1 n2))
+    | (LMaxBottom, LMaxBottom) => LMaxBottom
+    | (LMaxBottom, LMaxValue n) => LMaxValue n
+    | (LMaxValue n, LMaxBottom) => LMaxValue n
+    | (LMaxValue n1, LMaxValue n2) => (LMaxValue (max n1 n2))
   end.
 
 Theorem lmax_merge_assoc : forall (lm1 lm2 lm3 : lmax),
   lmax_merge (lmax_merge lm1 lm2) lm3 =
     lmax_merge lm3 (lmax_merge lm1 lm2).
 Proof with eauto.
-  induction lm1; induction lm2; induction lm3; try unfold lmax_merge; try eauto;
-  rewrite max_comm; reflexivity.
+  destruct lm1; destruct lm2; destruct lm3; eauto;
+    unfold lmax_merge; rewrite max_comm...
 Qed.
 
 Theorem lmax_merge_comm : forall (lm1 lm2 : lmax),
   lmax_merge lm1 lm2 = lmax_merge lm2 lm1.
 Proof with eauto.
-  induction lm1; induction lm2...
-  try unfold lmax_merge; rewrite max_comm...
+  destruct lm1; destruct lm2...
+    try unfold lmax_merge; rewrite max_comm...
 Qed.
 
 Theorem lmax_merge_idemp : forall (lm : lmax),
   lmax_merge lm lm = lm.
 Proof with eauto.
-  induction lm; unfold lmax_merge; simpl; rewrite max_idempotent...
+  destruct lm; unfold lmax_merge...
+    rewrite max_idempotent...
 Qed.
 
 End JoinSemiLattice.
