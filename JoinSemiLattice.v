@@ -6,13 +6,17 @@ Require Export Sets.Ensembles.
 Module JoinSemiLattice.
 
 Inductive lbool : Type :=
-  LBool : bool -> lbool.
+  | LBool : bool -> lbool
+  | LBoolBottom : lbool.
 
 Hint Constructors lbool.
 
 Definition lbool_merge lb1 lb2 :=
   match (lb1, lb2) with
-    (LBool b1, LBool b2) => (LBool (orb b1 b2))
+    | (LBool b1, LBool b2) => (LBool (orb b1 b2))
+    | (LBool b1, LBoolBottom) => (LBool b1)
+    | (LBoolBottom, LBool b2) => (LBool b2)
+    | (LBoolBottom, LBoolBottom) => LBoolBottom
   end.
 
 Theorem lbool_merge_assoc : forall (lb1 lb2 lb3 : lbool),
@@ -22,6 +26,8 @@ Proof with eauto.
   induction lb1; induction lb2; induction lb3...
   unfold lbool_merge; unfold orb.
   destruct b; simpl; destruct b1; try destruct b0; try reflexivity.
+  unfold lbool_merge; unfold orb; destruct b; destruct b0...
+  unfold lbool_merge; unfold orb; destruct b; destruct b0...
 Qed.
 
 Theorem lbool_merge_comm : forall (lb1 lb2 : lbool),
@@ -35,7 +41,9 @@ Qed.
 Theorem lbool_merge_idemp : forall (lb : lbool),
   lbool_merge lb lb = lb.
 Proof with eauto.
-  induction lb; unfold lbool_merge; unfold orb; destruct b...
+  induction lb; unfold lbool_merge; unfold orb.
+  destruct b...
+  reflexivity.
 Qed.
 
 Inductive lmax : Type :=
