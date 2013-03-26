@@ -15,15 +15,15 @@ Hint Constructors lbool.
 
 Definition lbool_reveal lb :=
   match lb with
-    | LBoolBottom => false
+    | LBoolBottom  => false
     | LBoolValue b => b
   end.
 
 Definition lbool_merge lb1 lb2 :=
   match (lb1, lb2) with
-    | (LBoolBottom, LBoolBottom) => LBoolBottom
-    | (LBoolBottom, LBoolValue b2) => (LBoolValue b2)
-    | (LBoolValue b1, LBoolBottom) => (LBoolValue b1)
+    | (LBoolBottom, LBoolBottom)     => LBoolBottom
+    | (LBoolBottom, LBoolValue b2)   => (LBoolValue b2)
+    | (LBoolValue b1, LBoolBottom)   => (LBoolValue b1)
     | (LBoolValue b1, LBoolValue b2) => (LBoolValue (orb b1 b2))
   end.
 
@@ -56,21 +56,21 @@ Qed.
 
 Inductive lmax : Type :=
   | LMaxBottom : lmax
-  | LMaxValue : forall (n : nat), lmax.
+  | LMaxValue  : forall (n : nat), lmax.
 
 Hint Constructors lmax.
 
 Definition lmax_reveal lm :=
   match lm with
-    | LMaxBottom => 0
+    | LMaxBottom  => 0
     | LMaxValue n => n
   end.
 
 Definition lmax_merge lm1 lm2 :=
   match (lm1, lm2) with
-    | (LMaxBottom, LMaxBottom) => LMaxBottom
-    | (LMaxBottom, LMaxValue n) => LMaxValue n
-    | (LMaxValue n, LMaxBottom) => LMaxValue n
+    | (LMaxBottom, LMaxBottom)     => LMaxBottom
+    | (LMaxBottom, LMaxValue n)    => LMaxValue n
+    | (LMaxValue n, LMaxBottom)    => LMaxValue n
     | (LMaxValue n1, LMaxValue n2) => (LMaxValue (max n1 n2))
   end.
 
