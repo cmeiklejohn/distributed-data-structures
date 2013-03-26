@@ -41,9 +41,6 @@ prop_LBoolMerge = binMergeCommutative _JoinSemiLattice__lbool_merge
 -- Max lattice
 prop_LMaxMerge = binMergeCommutative _JoinSemiLattice__lmax_merge
 
--- Main lattice
-prop_LMinMerge = binMergeCommutative _JoinSemiLattice__lmin_merge
-
 -- Test
 runTests = $quickCheckAll
 

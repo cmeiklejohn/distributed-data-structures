@@ -85,35 +85,4 @@ Proof with eauto.
   induction lm; unfold lmax_merge; simpl; rewrite max_idempotent...
 Qed.
 
-Inductive lmin : Type :=
-  LMin : nat -> lmin.
-
-Hint Constructors lmin.
-
-Definition lmin_merge lm1 lm2 :=
-  match (lm1, lm2) with
-    (LMin n1, LMin n2) => (LMin (min n1 n2))
-  end.
-
-Theorem lmin_merge_assoc : forall (lm1 lm2 lm3 : lmin),
-  lmin_merge (lmin_merge lm1 lm2) lm3 =
-    lmin_merge lm3 (lmin_merge lm1 lm2).
-Proof with eauto.
-  induction lm1; induction lm2; induction lm3; try unfold lmin_merge; try eauto;
-  rewrite min_comm; reflexivity.
-Qed.
-
-Theorem lmin_merge_comm : forall (lm1 lm2 : lmin),
-  lmin_merge lm1 lm2 = lmin_merge lm2 lm1.
-Proof with eauto.
-  induction lm1; induction lm2...
-  try unfold lmin_merge; rewrite min_comm...
-Qed.
-
-Theorem lmin_merge_idemp : forall (lm : lmin),
-  lmin_merge lm lm = lm.
-Proof with eauto.
-  induction lm; unfold lmin_merge; simpl; rewrite min_idempotent...
-Qed.
-
 End JoinSemiLattice.
