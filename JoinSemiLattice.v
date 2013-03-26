@@ -63,7 +63,7 @@ Hint Constructors lmax.
 Definition lmax_reveal (lm : lmax) :=
   match lm with
     | LMaxBottom => 0
-    | LMaxValue n => 0
+    | LMaxValue n => n
   end.
 
 Definition lmax_merge lm1 lm2 :=
