@@ -3,6 +3,8 @@ Require Export Max.
 Require Export Min.
 Require Export Sets.Ensembles.
 
+Set Implicit Arguments.
+
 Module JoinSemiLattice.
 
 Inductive lbool : Type :=
