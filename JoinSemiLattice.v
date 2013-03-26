@@ -13,15 +13,15 @@ Hint Constructors lbool.
 
 Definition lbool_reveal lb :=
   match lb with
-    | LBoolBottom => false
+    | LBoolBottom  => false
     | LBoolValue b => b
   end.
 
 Definition lbool_merge lb1 lb2 :=
   match (lb1, lb2) with
-    | (LBoolBottom, LBoolBottom) => LBoolBottom
-    | (LBoolBottom, LBoolValue b2) => (LBoolValue b2)
-    | (LBoolValue b1, LBoolBottom) => (LBoolValue b1)
+    | (LBoolBottom, LBoolBottom)     => LBoolBottom
+    | (LBoolBottom, LBoolValue b2)   => (LBoolValue b2)
+    | (LBoolValue b1, LBoolBottom)   => (LBoolValue b1)
     | (LBoolValue b1, LBoolValue b2) => (LBoolValue (orb b1 b2))
   end.
 
@@ -52,25 +52,32 @@ Proof with eauto.
   induction lb... destruct b...
 Qed.
 
-Inductive lmax (X : Type) : Type :=
-  | LMaxBottom : lmax X
-  | LMaxValue : X -> lmax X.
+Inductive number :=
+  | NumberNat : nat -> number.
 
-(* Definition lmax_reveal (X : Type) (lm : lmax X) : X := *)
+Inductive lmax : Type :=
+  | LMaxBottom : lmax
+  | LMaxValue  : number -> lmax.
+
+Eval compute in LMaxBottom.
+Eval compute in LMaxValue (NumberNat 2).
+
+(* Definition lmax_reveal (lm : lmax) : number := *)
 (*   match lm with *)
-(*   | LMaxBottom => match X with *)
-(*                     | nat => 0 *)
-(*                   end *)
-(*   | LMaxValue n => n *)
+(*     | LMaxBottom =>  *)
+(*     | LMaxValue n => n *)
 (*   end. *)
 
-(* Definition lmax_merge (X : Type) (lm1 lm2 : lmax X) := *)
-(*   match (lm1, lm2) with *)
-(*     | (LMaxBottom, LMaxBottom) => LMaxBottom *)
-(*     | (LMaxBottom, LMaxValue n) => LMaxBottom *)
-(*     | (LMaxValue n, LMaxBottom) => LMaxBottom *)
-(*     | (LMaxValue n1, LMaxValue n2) => LMaxValue X (max n1 n2) *)
-(*   end. *)
+Definition lmax_merge (lm1 lm2 : lmax) :=
+  match (lm1, lm2) with
+    | (LMaxBottom, LMaxBottom)     => LMaxBottom
+    | (LMaxBottom, LMaxValue n)    => LMaxBottom
+    | (LMaxValue n, LMaxBottom)    => LMaxBottom
+    | (LMaxValue n1, LMaxValue n2) =>
+      match (n1, n2) with
+        | (NumberNat nn1, NumberNat nn2) => LMaxValue (NumberNat (max nn1 nn2))
+      end 
+  end.
 
 (* Theorem lmax_merge_assoc : forall (lm1 lm2 lm3 : lmax), *)
 (*   lmax_merge (lmax_merge lm1 lm2) lm3 = *)
