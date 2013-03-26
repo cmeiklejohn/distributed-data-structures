@@ -21,6 +21,12 @@ Definition lbool_merge lb1 lb2 :=
     | (LBoolValue b1, LBoolValue b2) => (LBoolValue (orb b1 b2))
   end.
 
+Definition lbool_reveal lb :=
+  match lb with
+    | LBoolBottom => false
+    | LBoolValue b => b
+  end.
+
 Theorem lbool_merge_assoc : forall (lb1 lb2 lb3 : lbool),
   lbool_merge (lbool_merge lb1 lb2) lb3 =
     lbool_merge lb3 (lbool_merge lb1 lb2).
