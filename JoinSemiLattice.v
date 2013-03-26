@@ -56,7 +56,7 @@ Qed.
 
 Inductive lmax : Type :=
   | LMaxBottom : lmax
-  | LMaxValue: forall (n : nat), lmax.
+  | LMaxValue : forall (n : nat), lmax.
 
 Hint Constructors lmax.
 
