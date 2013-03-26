@@ -5,16 +5,18 @@ import qualified Datatypes
 import qualified Peano
 
 
-type JoinSemiLattice__Coq_lbool =
-  Datatypes.Coq_bool
-  -- singleton inductive, whose constructor was LBool
-  
-_JoinSemiLattice__lbool_rect :: (Datatypes.Coq_bool -> a1) ->
-                                JoinSemiLattice__Coq_lbool -> a1
-_JoinSemiLattice__lbool_rect f l =
-  f l
+data JoinSemiLattice__Coq_lbool =
+   JoinSemiLattice__LBoolBottom
+ | JoinSemiLattice__LBoolValue Datatypes.Coq_bool
 
-_JoinSemiLattice__lbool_rec :: (Datatypes.Coq_bool -> a1) ->
+_JoinSemiLattice__lbool_rect :: a1 -> (Datatypes.Coq_bool -> a1) ->
+                                JoinSemiLattice__Coq_lbool -> a1
+_JoinSemiLattice__lbool_rect f f0 l =
+  case l of {
+   JoinSemiLattice__LBoolBottom -> f;
+   JoinSemiLattice__LBoolValue x -> f0 x}
+
+_JoinSemiLattice__lbool_rec :: a1 -> (Datatypes.Coq_bool -> a1) ->
                                JoinSemiLattice__Coq_lbool -> a1
 _JoinSemiLattice__lbool_rec =
   _JoinSemiLattice__lbool_rect
@@ -23,7 +25,13 @@ _JoinSemiLattice__lbool_merge :: JoinSemiLattice__Coq_lbool ->
                                  JoinSemiLattice__Coq_lbool ->
                                  JoinSemiLattice__Coq_lbool
 _JoinSemiLattice__lbool_merge lb1 lb2 =
-  Datatypes.orb lb1 lb2
+  case lb1 of {
+   JoinSemiLattice__LBoolBottom -> lb2;
+   JoinSemiLattice__LBoolValue b1 ->
+    case lb2 of {
+     JoinSemiLattice__LBoolBottom -> JoinSemiLattice__LBoolValue b1;
+     JoinSemiLattice__LBoolValue b2 -> JoinSemiLattice__LBoolValue
+      (Datatypes.orb b1 b2)}}
 
 type JoinSemiLattice__Coq_lmax =
   Datatypes.Coq_nat

@@ -8,44 +8,44 @@ Set Implicit Arguments.
 Module JoinSemiLattice.
 
 Inductive lbool : Type :=
-  | LBool : bool -> lbool
-  | LBoolBottom : lbool.
+  | LBoolBottom : lbool
+  | LBoolValue  : bool -> lbool.
 
 Hint Constructors lbool.
 
 Definition lbool_merge lb1 lb2 :=
   match (lb1, lb2) with
-    | (LBool b1, LBool b2) => (LBool (orb b1 b2))
-    | (LBool b1, LBoolBottom) => (LBool b1)
-    | (LBoolBottom, LBool b2) => (LBool b2)
     | (LBoolBottom, LBoolBottom) => LBoolBottom
+    | (LBoolBottom, LBoolValue b2) => (LBoolValue b2)
+    | (LBoolValue b1, LBoolBottom) => (LBoolValue b1)
+    | (LBoolValue b1, LBoolValue b2) => (LBoolValue (orb b1 b2))
   end.
 
 Theorem lbool_merge_assoc : forall (lb1 lb2 lb3 : lbool),
   lbool_merge (lbool_merge lb1 lb2) lb3 =
     lbool_merge lb3 (lbool_merge lb1 lb2).
 Proof with eauto.
-  induction lb1; induction lb2; induction lb3...
-  unfold lbool_merge; unfold orb.
-  destruct b; simpl; destruct b1; try destruct b0; try reflexivity.
-  unfold lbool_merge; unfold orb; destruct b; destruct b0...
-  unfold lbool_merge; unfold orb; destruct b; destruct b0...
+  destruct lb3; destruct lb2; destruct lb1...
+    destruct b; destruct b0...
+    destruct b; destruct b0...
+    destruct b; destruct b0...
+      destruct b1...
+      destruct b1...
+      destruct b1...
+      destruct b1...
 Qed.
 
 Theorem lbool_merge_comm : forall (lb1 lb2 : lbool),
   lbool_merge lb1 lb2 = lbool_merge lb2 lb1.
 Proof with eauto.
   induction lb1; induction lb2...
-  unfold lbool_merge; unfold orb.
-  destruct b; destruct b0...
+    destruct b; destruct b0...
 Qed.
 
 Theorem lbool_merge_idemp : forall (lb : lbool),
   lbool_merge lb lb = lb.
 Proof with eauto.
-  induction lb; unfold lbool_merge; unfold orb.
-  destruct b...
-  reflexivity.
+  induction lb... destruct b...
 Qed.
 
 Inductive lmax : Type :=
