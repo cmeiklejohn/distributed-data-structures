@@ -60,7 +60,7 @@ Inductive lmax : Type :=
 
 Hint Constructors lmax.
 
-Definition lmax_reveal (lm : lmax) :=
+Definition lmax_reveal lm :=
   match lm with
     | LMaxBottom => 0
     | LMaxValue n => n
