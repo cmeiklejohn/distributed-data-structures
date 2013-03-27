@@ -41,40 +41,40 @@ Proof with eauto.
   induction lb... destruct b...
 Qed.
 
-Inductive lmax : Type :=
-  | LMaxValue  : forall (n : nat), lmax.
+Inductive lmax_nat : Type :=
+  | LMaxNatValue  : forall (n : nat), lmax_nat.
 
-Hint Constructors lmax.
+Hint Constructors lmax_nat.
 
-Definition lmax_reveal lm :=
+Definition lmax_nat_reveal lm :=
   match lm with
-    | LMaxValue n => n
+    | LMaxNatValue n => n
   end.
 
-Definition lmax_merge lm1 lm2 :=
+Definition lmax_nat_merge lm1 lm2 :=
   match (lm1, lm2) with
-    | (LMaxValue n1, LMaxValue n2) => (LMaxValue (max n1 n2))
+    | (LMaxNatValue n1, LMaxNatValue n2) => (LMaxNatValue (max n1 n2))
   end.
 
-Theorem lmax_merge_assoc : forall (lm1 lm2 lm3 : lmax),
-  lmax_merge (lmax_merge lm1 lm2) lm3 =
-    lmax_merge lm3 (lmax_merge lm1 lm2).
+Theorem lmax_nat_merge_assoc : forall (lm1 lm2 lm3 : lmax_nat),
+  lmax_nat_merge (lmax_nat_merge lm1 lm2) lm3 =
+    lmax_nat_merge lm3 (lmax_nat_merge lm1 lm2).
 Proof with eauto.
   destruct lm1; destruct lm2; destruct lm3; eauto;
-    unfold lmax_merge; rewrite max_comm...
+    unfold lmax_nat_merge; rewrite max_comm...
 Qed.
 
-Theorem lmax_merge_comm : forall (lm1 lm2 : lmax),
-  lmax_merge lm1 lm2 = lmax_merge lm2 lm1.
+Theorem lmax_nat_merge_comm : forall (lm1 lm2 : lmax_nat),
+  lmax_nat_merge lm1 lm2 = lmax_nat_merge lm2 lm1.
 Proof with eauto.
   destruct lm1; destruct lm2...
-    try unfold lmax_merge; rewrite max_comm...
+    try unfold lmax_nat_merge; rewrite max_comm...
 Qed.
 
-Theorem lmax_merge_idemp : forall (lm : lmax),
-  lmax_merge lm lm = lm.
+Theorem lmax_nat_merge_idemp : forall (lm : lmax_nat),
+  lmax_nat_merge lm lm = lm.
 Proof with eauto.
-  destruct lm; unfold lmax_merge...
+  destruct lm; unfold lmax_nat_merge...
     rewrite max_idempotent...
 Qed.
 
