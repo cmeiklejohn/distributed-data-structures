@@ -78,4 +78,41 @@ Proof with eauto.
     rewrite max_idempotent...
 Qed.
 
+Inductive lmin_nat : Type :=
+  | LMinNatValue  : forall (n : nat), lmin_nat.
+
+Hint Constructors lmin_nat.
+
+Definition lmin_nat_reveal lm :=
+  match lm with
+    | LMinNatValue n => n
+  end.
+
+Definition lmin_nat_merge lm1 lm2 :=
+  match (lm1, lm2) with
+    | (LMinNatValue n1, LMinNatValue n2) => (LMinNatValue (min n1 n2))
+  end.
+
+Theorem lmin_nat_merge_assoc : forall (lm1 lm2 lm3 : lmin_nat),
+  lmin_nat_merge (lmin_nat_merge lm1 lm2) lm3 =
+    lmin_nat_merge lm3 (lmin_nat_merge lm1 lm2).
+Proof with eauto.
+  destruct lm1; destruct lm2; destruct lm3; eauto;
+    unfold lmin_nat_merge; rewrite min_comm...
+Qed.
+
+Theorem lmin_nat_merge_comm : forall (lm1 lm2 : lmin_nat),
+  lmin_nat_merge lm1 lm2 = lmin_nat_merge lm2 lm1.
+Proof with eauto.
+  destruct lm1; destruct lm2...
+    try unfold lmin_nat_merge; rewrite min_comm...
+Qed.
+
+Theorem lmin_nat_merge_idemp : forall (lm : lmin_nat),
+  lmin_nat_merge lm lm = lm.
+Proof with eauto.
+  destruct lm; unfold lmin_nat_merge...
+    rewrite min_idempotent...
+Qed.
+
 End JoinSemiLattice.
