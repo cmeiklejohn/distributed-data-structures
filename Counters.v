@@ -1,6 +1,7 @@
 Require Export SfLib.
 Require Export Sets.Ensembles.
 
+(** Grow-only counters, similar to a vector clock. *)
 Module G_Counter.
 
 (** Actor, which is of type nat. *)
@@ -31,8 +32,7 @@ Eval compute in Singleton Clock (In_Clock 1 1).
 
 End G_Counter.
 
+(** Positive/negative counters, a composition of two G_Counters. *)
 Module PN_Counter.
-
-(** Define PN_Counter as a composition of two G_Counters. *)
 
 End PN_Counter.
