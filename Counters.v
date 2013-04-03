@@ -34,4 +34,4 @@ Eval compute in Singleton Clock (In_Clock 1 1).
 Eval compute in In_PN_Counter Clock 
                               (In_G_Counter Clock (Singleton Clock (In_Clock 1 1)))                                      (In_G_Counter Clock (Singleton Clock (In_Clock 2 1))).
 
-(** Add increment, merge and reveal functions for PN_Counter. *)
+(** Add increment, decrement, merge and reveal functions for PN_Counter. *)
