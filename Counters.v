@@ -1,9 +1,6 @@
 Require Export SfLib.
 Require Export Sets.Ensembles.
 
-(** Grow-only counters, similar to a vector clock. *)
-Module G_Counter.
-
 (** Actor, which is of type nat. *)
 Definition Actor := nat.
 
@@ -19,6 +16,12 @@ Inductive G_Counter : Type :=
 
 Hint Constructors G_Counter.
 
+(** Add increment, merge and reveal functions for G_Counter. *)
+
+(** Positive/negative counters, a composition of two G_Counters. *)
+Inductive PN_Counter : Type :=
+  In_PN_Counter : forall (x : Type), G_Counter -> G_Counter -> PN_Counter.
+
 (** Tests for constructor code. *)
 Eval compute in Singleton Clock (In_Clock 1 1).
 
@@ -28,11 +31,7 @@ Eval compute in In_G_Counter Clock (Singleton Clock (In_Clock 1 1)).
 
 Eval compute in Singleton Clock (In_Clock 1 1).
 
-(** Add increment, merge and reveal functions. *)
+Eval compute in In_PN_Counter Clock 
+                              (In_G_Counter Clock (Singleton Clock (In_Clock 1 1)))                                      (In_G_Counter Clock (Singleton Clock (In_Clock 2 1))).
 
-End G_Counter.
-
-(** Positive/negative counters, a composition of two G_Counters. *)
-Module PN_Counter.
-
-End PN_Counter.
+(** Add increment, merge and reveal functions for PN_Counter. *)
