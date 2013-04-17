@@ -4,6 +4,7 @@ Require Import Coq.Arith.Arith.
 Require Import Coq.Structures.OrdersEx.
 Require Import Coq.MSets.MSetList.
 
+(* Taken from LambdaJS to provide backwards compatibility b/t Ordered/OrderedType *)
 Module UOT_to_OrderedTypeLegacy (UOT:OrderedType) <:
   (IsEqOrig UOT) <: OrderedType.OrderedType.
 
@@ -36,20 +37,24 @@ End UOT_to_OrderedTypeLegacy.
 
 Module Nat_as_Legacy_OT := UOT_to_OrderedTypeLegacy (Nat_as_OT).
 
+(* Map of clocks, which are nat -> nat. *)
+
 Module ClockMap := FMapList.Make (Nat_as_Legacy_OT).
 
 (* Grow only counter, representing a vector of clocks which are nats. *)
 
+(* Initialize an empty G_Counter. *)
 Definition G_Counter_init := ClockMap.empty nat.
 
-Eval compute in ClockMap.find 1 (ClockMap.empty nat).
-
-Function G_Counter_incr actor clocks :=
+(* Increment a G_Counter for a particular actor. *)
+Definition G_Counter_incr actor clocks :=
   match ClockMap.find actor clocks with
     | None => ClockMap.add actor 1 clocks
     | Some count => (ClockMap.add actor (S count) (ClockMap.remove actor clocks))
   end.
 
-Eval compute in ClockMap.find 1 (G_Counter_incr 1 (G_Counter_init)).
+(* Reveal the current value of a G_Counter. *)
+Definition G_Counter_reveal clocks :=
+  ClockMap.fold (fun key elt acc => (plus acc elt)) clocks 0.
 
-Eval compute in ClockMap.find 2 (G_Counter_incr 1 (G_Counter_init)).
+  
