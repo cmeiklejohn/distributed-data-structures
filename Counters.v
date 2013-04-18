@@ -57,4 +57,13 @@ Definition G_Counter_incr actor clocks :=
 Definition G_Counter_reveal clocks :=
   ClockMap.fold (fun key elt acc => (plus acc elt)) clocks 0.
 
-  
+(* Merge two G_Counters *)
+Definition G_Counter_merge c1 c2 :=
+  ClockMap.fold (fun key elt acc => 
+                   match ClockMap.find key acc with
+                       | None => ClockMap.add key elt acc
+                       | Some x => ClockMap.add key (max elt x) acc
+                   end) c2 
+                (ClockMap.fold (fun key elt acc => ClockMap.add key elt acc) 
+                               c1 (ClockMap.empty nat)).
+
