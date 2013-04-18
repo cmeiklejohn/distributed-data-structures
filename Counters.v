@@ -50,7 +50,7 @@ Definition G_Counter_init := ClockMap.empty nat.
 Definition G_Counter_incr actor clocks :=
   match ClockMap.find actor clocks with
     | None => ClockMap.add actor 1 clocks
-    | Some count => (ClockMap.add actor (S count) (ClockMap.remove actor clocks))
+    | Some count => (ClockMap.add actor (S count) clocks)
   end.
 
 (* Reveal the current value of a G_Counter. *)
@@ -59,11 +59,11 @@ Definition G_Counter_reveal clocks :=
 
 (* Merge two G_Counters *)
 Definition G_Counter_merge c1 c2 :=
-  ClockMap.fold (fun key elt acc => 
+  ClockMap.fold (fun key elt acc =>
                    match ClockMap.find key acc with
                        | None => ClockMap.add key elt acc
                        | Some x => ClockMap.add key (max elt x) acc
-                   end) c2 
-                (ClockMap.fold (fun key elt acc => ClockMap.add key elt acc) 
+                   end) c2
+                (ClockMap.fold (fun key elt acc =>
+                                  ClockMap.add key elt acc)
                                c1 (ClockMap.empty nat)).
-
