@@ -40,6 +40,7 @@ Module Nat_as_Legacy_OT := UOT_to_OrderedTypeLegacy (Nat_as_OT).
 (* Map of clocks, which are nat -> nat. *)
 
 Module ClockMap := FMapList.Make (Nat_as_Legacy_OT).
+Module ClockMapFacts := FMapFacts.Facts (ClockMap).
 
 (* Grow only counter, representing a vector of clocks which are nats. *)
 
@@ -58,12 +59,31 @@ Definition G_Counter_reveal clocks :=
   ClockMap.fold (fun key elt acc => (plus acc elt)) clocks 0.
 
 (* Merge two G_Counters *)
+Definition pick_max (key : nat) (elt : nat) acc :=
+  match ClockMap.find key acc with
+    | None => ClockMap.add key elt acc
+    | Some x => ClockMap.add key (max elt x) acc
+  end.
+
 Definition G_Counter_merge c1 c2 :=
-  ClockMap.fold (fun key elt acc =>
-                   match ClockMap.find key acc with
-                       | None => ClockMap.add key elt acc
-                       | Some x => ClockMap.add key (max elt x) acc
-                   end) c2
-                (ClockMap.fold (fun key elt acc =>
-                                  ClockMap.add key elt acc)
-                               c1 (ClockMap.empty nat)).
+  ClockMap.fold pick_max c2 c1.
+
+Theorem G_Counter_merge_comm : forall c1 c2,
+  ClockMap.Equal (G_Counter_merge c1 c2) (G_Counter_merge c2 c1).
+Proof.
+  intros.
+  unfold G_Counter_merge.
+  repeat rewrite ClockMap.fold_1.
+  unfold ClockMap.Equal. intro y.
+  remember (ClockMap.find (elt:=nat) y c1) as c1y.
+  remember (ClockMap.find (elt:=nat) y c2) as c2y.
+  destruct c1 as [c1' c1sorted]. destruct c2 as [c2' c2sorted]. simpl in *.
+  induction c1'; simpl.
+  rewrite <- Heqc2y. destruct c2y. symmetry in Heqc2y; rewrite <- ClockMapFacts.find_mapsto_iff in Heqc2y.
+
+
+  induction c1'. simpl. induction c2'; simpl; auto.
+  rewrite ClockMapFacts.Equal_Equiv.
+  unfold ClockMap.Equiv. compute. split; intros; auto. inversion H.
+  destruct a. simpl. unfold pick_max at 2. simpl. unfold ClockMap.add. simpl.
+  apply IHc2'.
