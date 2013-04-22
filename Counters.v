@@ -59,14 +59,20 @@ Definition G_Counter_reveal clocks :=
   ClockMap.fold (fun key elt acc => (plus acc elt)) clocks 0.
 
 (* Merge two G_Counters *)
-Definition pick_max (key : nat) (elt : nat) acc :=
-  match ClockMap.find key acc with
-    | None => ClockMap.add key elt acc
-    | Some x => ClockMap.add key (max elt x) acc
+Definition pick_max (n1 n2 : option nat) :=
+  match n1, n2 with
+    | None, None => None
+    | Some n, None => Some n
+    | None, Some n => Some n
+    | Some n1', Some n2' => Some (max n1' n2')
   end.
 
 Definition G_Counter_merge c1 c2 :=
-  ClockMap.fold pick_max c2 c1.
+  ClockMap.map2 pick_max c2 c1.
+
+Eval compute in G_Counter_merge
+                  (G_Counter_incr 1 (G_Counter_incr 1 (G_Counter_incr 2 (G_Counter_init))))
+                  (G_Counter_incr 2 (G_Counter_incr 1 (G_Counter_init))).
 
 Theorem G_Counter_merge_comm : forall c1 c2,
   ClockMap.Equal (G_Counter_merge c1 c2) (G_Counter_merge c2 c1).
