@@ -30,28 +30,53 @@ _JoinSemiLattice__lbool_merge :: JoinSemiLattice__Coq_lbool ->
 _JoinSemiLattice__lbool_merge lb1 lb2 =
   Datatypes.orb lb1 lb2
 
-type JoinSemiLattice__Coq_lmax =
+type JoinSemiLattice__Coq_lmax_nat =
   Datatypes.Coq_nat
-  -- singleton inductive, whose constructor was LMaxValue
+  -- singleton inductive, whose constructor was LMaxNatValue
   
-_JoinSemiLattice__lmax_rect :: (Datatypes.Coq_nat -> a1) ->
-                               JoinSemiLattice__Coq_lmax -> a1
-_JoinSemiLattice__lmax_rect f l =
+_JoinSemiLattice__lmax_nat_rect :: (Datatypes.Coq_nat -> a1) ->
+                                   JoinSemiLattice__Coq_lmax_nat -> a1
+_JoinSemiLattice__lmax_nat_rect f l =
   f l
 
-_JoinSemiLattice__lmax_rec :: (Datatypes.Coq_nat -> a1) ->
-                              JoinSemiLattice__Coq_lmax -> a1
-_JoinSemiLattice__lmax_rec =
-  _JoinSemiLattice__lmax_rect
+_JoinSemiLattice__lmax_nat_rec :: (Datatypes.Coq_nat -> a1) ->
+                                  JoinSemiLattice__Coq_lmax_nat -> a1
+_JoinSemiLattice__lmax_nat_rec =
+  _JoinSemiLattice__lmax_nat_rect
 
-_JoinSemiLattice__lmax_reveal :: JoinSemiLattice__Coq_lmax ->
-                                 Datatypes.Coq_nat
-_JoinSemiLattice__lmax_reveal lm =
+_JoinSemiLattice__lmax_nat_reveal :: JoinSemiLattice__Coq_lmax_nat ->
+                                     Datatypes.Coq_nat
+_JoinSemiLattice__lmax_nat_reveal lm =
   lm
 
-_JoinSemiLattice__lmax_merge :: JoinSemiLattice__Coq_lmax ->
-                                JoinSemiLattice__Coq_lmax ->
-                                JoinSemiLattice__Coq_lmax
-_JoinSemiLattice__lmax_merge lm1 lm2 =
+_JoinSemiLattice__lmax_nat_merge :: JoinSemiLattice__Coq_lmax_nat ->
+                                    JoinSemiLattice__Coq_lmax_nat ->
+                                    JoinSemiLattice__Coq_lmax_nat
+_JoinSemiLattice__lmax_nat_merge lm1 lm2 =
   Peano.max lm1 lm2
+
+type JoinSemiLattice__Coq_lmin_nat =
+  Datatypes.Coq_nat
+  -- singleton inductive, whose constructor was LMinNatValue
+  
+_JoinSemiLattice__lmin_nat_rect :: (Datatypes.Coq_nat -> a1) ->
+                                   JoinSemiLattice__Coq_lmin_nat -> a1
+_JoinSemiLattice__lmin_nat_rect f l =
+  f l
+
+_JoinSemiLattice__lmin_nat_rec :: (Datatypes.Coq_nat -> a1) ->
+                                  JoinSemiLattice__Coq_lmin_nat -> a1
+_JoinSemiLattice__lmin_nat_rec =
+  _JoinSemiLattice__lmin_nat_rect
+
+_JoinSemiLattice__lmin_nat_reveal :: JoinSemiLattice__Coq_lmin_nat ->
+                                     Datatypes.Coq_nat
+_JoinSemiLattice__lmin_nat_reveal lm =
+  lm
+
+_JoinSemiLattice__lmin_nat_merge :: JoinSemiLattice__Coq_lmin_nat ->
+                                    JoinSemiLattice__Coq_lmin_nat ->
+                                    JoinSemiLattice__Coq_lmin_nat
+_JoinSemiLattice__lmin_nat_merge lm1 lm2 =
+  Peano.min lm1 lm2
 
