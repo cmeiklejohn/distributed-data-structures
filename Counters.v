@@ -39,7 +39,7 @@ Module Nat_as_Legacy_OT := UOT_to_OrderedTypeLegacy (Nat_as_OT).
 
 (* Map of clocks, which are nat -> nat. *)
 
-Module ClockMap := FMapList.Make (Nat_as_Legacy_OT).
+Module ClockMap := FMapWeakList.Make (Nat_as_Legacy_OT).
 Module ClockMapFacts := FMapFacts.Facts (ClockMap).
 
 (* Grow only counter, representing a vector of clocks which are nats. *)
@@ -59,7 +59,7 @@ Definition G_Counter_reveal clocks :=
   ClockMap.fold (fun key elt acc => (plus acc elt)) clocks 0.
 
 (* Merge two G_Counters *)
-Definition pick_max (n1 n2 : option nat) :=
+Definition G_Counter_max (n1 n2 : option nat) :=
   match n1, n2 with
     | None, None => None
     | Some n, None => Some n
@@ -67,29 +67,55 @@ Definition pick_max (n1 n2 : option nat) :=
     | Some n1', Some n2' => Some (max n1' n2')
   end.
 
-Definition G_Counter_merge c1 c2 :=
-  ClockMap.map2 pick_max c2 c1.
+Lemma G_Counter_max_comm : forall n1 n2, 
+  G_Counter_max n1 n2 = G_Counter_max n2 n1.
+Proof.
+  intros. destruct n1; destruct n2; auto.
+  simpl. f_equal. apply Max.max_comm.
+Qed.
 
-Eval compute in G_Counter_merge
-                  (G_Counter_incr 1 (G_Counter_incr 1 (G_Counter_incr 2 (G_Counter_init))))
-                  (G_Counter_incr 2 (G_Counter_incr 1 (G_Counter_init))).
+Lemma G_Counter_max_idempotent : forall n1, 
+  G_Counter_max n1 n1 = n1.
+Proof.
+  intros. destruct n1; auto; simpl.
+  f_equal. apply Max.max_idempotent.
+Qed.
+
+Lemma G_Counter_max_assoc : forall n1 n2 n3, 
+  G_Counter_max n1 (G_Counter_max n2 n3) = G_Counter_max (G_Counter_max n1 n2) n3.
+Proof.
+  intros. destruct n1; destruct n2; destruct n3; auto.
+  unfold G_Counter_max. f_equal. apply Max.max_assoc.
+Qed.
+
+Definition G_Counter_merge c1 c2 :=
+  ClockMap.map2 G_Counter_max c2 c1.
 
 Theorem G_Counter_merge_comm : forall c1 c2,
   ClockMap.Equal (G_Counter_merge c1 c2) (G_Counter_merge c2 c1).
 Proof.
-  intros.
-  unfold G_Counter_merge.
-  repeat rewrite ClockMap.fold_1.
-  unfold ClockMap.Equal. intro y.
-  remember (ClockMap.find (elt:=nat) y c1) as c1y.
-  remember (ClockMap.find (elt:=nat) y c2) as c2y.
-  destruct c1 as [c1' c1sorted]. destruct c2 as [c2' c2sorted]. simpl in *.
-  induction c1'; simpl.
-  rewrite <- Heqc2y. destruct c2y. symmetry in Heqc2y; rewrite <- ClockMapFacts.find_mapsto_iff in Heqc2y.
+  intros; unfold G_Counter_merge.
+  unfold ClockMap.Equal; intro.
+  repeat rewrite ClockMapFacts.map2_1bis; auto.
+  apply G_Counter_max_comm.
+Qed.
 
+Theorem G_Counter_merge_idempotent : forall c1,
+  ClockMap.Equal (G_Counter_merge c1 c1) c1.
+Proof.
+  intros; unfold G_Counter_merge.
+  unfold ClockMap.Equal; intro.
+  repeat rewrite ClockMapFacts.map2_1bis; auto.
+  apply G_Counter_max_idempotent.
+Qed.
 
-  induction c1'. simpl. induction c2'; simpl; auto.
-  rewrite ClockMapFacts.Equal_Equiv.
-  unfold ClockMap.Equiv. compute. split; intros; auto. inversion H.
-  destruct a. simpl. unfold pick_max at 2. simpl. unfold ClockMap.add. simpl.
-  apply IHc2'.
+Theorem G_Counter_merge_assoc : forall c1 c2 c3,
+  ClockMap.Equal 
+    (G_Counter_merge c1 (G_Counter_merge c2 c3))
+    (G_Counter_merge (G_Counter_merge c1 c2) c3).
+Proof.
+  intros; unfold G_Counter_merge.
+  unfold ClockMap.Equal; intro.
+  repeat rewrite ClockMapFacts.map2_1bis; auto.
+  repeat rewrite <- G_Counter_max_assoc; reflexivity.
+Qed.
