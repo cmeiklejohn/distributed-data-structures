@@ -45,7 +45,8 @@ Module ClockMapFacts := FMapFacts.Facts (ClockMap).
 (* Grow only counter, representing a vector of clocks which are nats. *)
 
 (* Initialize an empty G_Counter. *)
-Definition G_Counter_init := ClockMap.empty nat.
+Definition G_Counter := ClockMap.empty nat.
+Definition G_Counter_init := G_Counter.
 
 (* Increment a G_Counter for a particular actor. *)
 Definition G_Counter_incr actor clocks :=
