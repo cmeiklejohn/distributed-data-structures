@@ -95,10 +95,14 @@ Definition G_Counter_reveal clocks :=
 Definition G_Counter_merge c1 c2 :=
   ClockMap.map2 Clock_merge c2 c1.
 
+(* Verify that two G_Counters are equal. *)
+Definition G_Counter_equal (c1 c2 : ClockMap.t nat) :=
+  ClockMap.Equal c1 c2.
+
 (* Proofs that the G_Counter merge is a valid LUB. *)
 
 Theorem G_Counter_merge_comm : forall c1 c2,
-  ClockMap.Equal (G_Counter_merge c1 c2) (G_Counter_merge c2 c1).
+  G_Counter_equal (G_Counter_merge c1 c2) (G_Counter_merge c2 c1).
 Proof.
   intros; unfold G_Counter_merge.
   unfold ClockMap.Equal; intro.
@@ -107,7 +111,7 @@ Proof.
 Qed.
 
 Theorem G_Counter_merge_idempotent : forall c1,
-  ClockMap.Equal (G_Counter_merge c1 c1) c1.
+  G_Counter_equal (G_Counter_merge c1 c1) c1.
 Proof.
   intros; unfold G_Counter_merge.
   unfold ClockMap.Equal; intro.
@@ -116,7 +120,7 @@ Proof.
 Qed.
 
 Theorem G_Counter_merge_assoc : forall c1 c2 c3,
-  ClockMap.Equal 
+  G_Counter_equal 
     (G_Counter_merge c1 (G_Counter_merge c2 c3))
     (G_Counter_merge (G_Counter_merge c1 c2) c3).
 Proof.
@@ -147,3 +151,46 @@ Definition PN_Counter_reveal clocks :=
 (* Merge two PN_Counters. *)
 Definition PN_Counter_merge c1 c2 :=
   pair (G_Counter_merge (fst c1) (fst c2)) (G_Counter_merge (snd c1) (snd c2)).
+
+(* Verify that two PN_Counters are equal. *)
+Definition PN_Counter_equal (c1 c2 : (ClockMap.t nat * ClockMap.t nat)) :=
+  ClockMap.Equal (fst c1) (fst c2) /\ ClockMap.Equal (snd c1) (snd c2).
+
+(* Proof that the PN_Counter merge is a valid LUB. *)
+
+Theorem PN_Counter_merge_comm : forall c1 c2,
+  PN_Counter_equal (PN_Counter_merge c1 c2) (PN_Counter_merge c2 c1).
+Proof.
+  intros.
+  unfold PN_Counter_equal.
+  split; unfold ClockMap.Equal; intros;
+    unfold PN_Counter_merge; unfold G_Counter_merge; simpl;
+    repeat rewrite ClockMapFacts.map2_1bis; auto.
+    apply Clock_merge_comm.
+    apply Clock_merge_comm.
+Qed.
+
+Theorem PN_Counter_merge_idempotent : forall c1,
+  PN_Counter_equal (PN_Counter_merge c1 c1) c1.
+Proof.
+  intros.
+  unfold PN_Counter_equal.
+  split; unfold ClockMap.Equal; intros;
+    unfold PN_Counter_merge; unfold G_Counter_merge; simpl;
+    repeat rewrite ClockMapFacts.map2_1bis; auto.
+    apply Clock_merge_idempotent.
+    apply Clock_merge_idempotent.
+Qed.
+
+Theorem PN_Counter_merge_assoc : forall c1 c2 c3,
+  PN_Counter_equal                                
+    (PN_Counter_merge c1 (PN_Counter_merge c2 c3))
+    (PN_Counter_merge (PN_Counter_merge c1 c2) c3).
+Proof.
+  intros.
+  unfold PN_Counter_equal.
+  split; unfold ClockMap.Equal; intros;
+    unfold PN_Counter_merge; unfold G_Counter_merge; simpl;
+    repeat rewrite ClockMapFacts.map2_1bis; auto;
+    repeat rewrite <- Clock_merge_assoc; reflexivity.
+Qed.
