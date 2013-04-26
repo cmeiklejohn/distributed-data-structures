@@ -1,4 +1,3 @@
-Require Export SfLib.
 Require Export Max.
 Require Export Min.
 Require Export Sets.Ensembles.
