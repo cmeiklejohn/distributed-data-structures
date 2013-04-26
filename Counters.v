@@ -42,6 +42,38 @@ Module Nat_as_Legacy_OT := UOT_to_OrderedTypeLegacy (Nat_as_OT).
 Module ClockMap := FMapWeakList.Make (Nat_as_Legacy_OT).
 Module ClockMapFacts := FMapFacts.Facts (ClockMap).
 
+(* Merge two clocks. *)
+Definition Clock_merge (n1 n2 : option nat) :=
+  match n1, n2 with
+    | None, None => None
+    | Some n, None => Some n
+    | None, Some n => Some n
+    | Some n1', Some n2' => Some (max n1' n2')
+  end.
+
+(* Proofs of the clock merging being a valid LUB. *)
+
+Lemma Clock_merge_comm : forall n1 n2, 
+  Clock_merge n1 n2 = Clock_merge n2 n1.
+Proof.
+  intros. destruct n1; destruct n2; auto.
+  simpl. f_equal. apply Max.max_comm.
+Qed.
+
+Lemma Clock_merge_idempotent : forall n1, 
+  Clock_merge n1 n1 = n1.
+Proof.
+  intros. destruct n1; auto; simpl.
+  f_equal. apply Max.max_idempotent.
+Qed.
+
+Lemma Clock_merge_assoc : forall n1 n2 n3, 
+  Clock_merge n1 (Clock_merge n2 n3) = Clock_merge (Clock_merge n1 n2) n3.
+Proof.
+  intros. destruct n1; destruct n2; destruct n3; auto.
+  unfold Clock_merge. f_equal. apply Max.max_assoc.
+Qed.
+
 (* Grow only counter, representing a vector of clocks which are nats. *)
 
 (* Initialize an empty G_Counter. *)
@@ -59,38 +91,11 @@ Definition G_Counter_incr actor clocks :=
 Definition G_Counter_reveal clocks :=
   ClockMap.fold (fun key elt acc => (plus acc elt)) clocks 0.
 
-(* Merge two G_Counters *)
-Definition G_Counter_max (n1 n2 : option nat) :=
-  match n1, n2 with
-    | None, None => None
-    | Some n, None => Some n
-    | None, Some n => Some n
-    | Some n1', Some n2' => Some (max n1' n2')
-  end.
-
-Lemma G_Counter_max_comm : forall n1 n2, 
-  G_Counter_max n1 n2 = G_Counter_max n2 n1.
-Proof.
-  intros. destruct n1; destruct n2; auto.
-  simpl. f_equal. apply Max.max_comm.
-Qed.
-
-Lemma G_Counter_max_idempotent : forall n1, 
-  G_Counter_max n1 n1 = n1.
-Proof.
-  intros. destruct n1; auto; simpl.
-  f_equal. apply Max.max_idempotent.
-Qed.
-
-Lemma G_Counter_max_assoc : forall n1 n2 n3, 
-  G_Counter_max n1 (G_Counter_max n2 n3) = G_Counter_max (G_Counter_max n1 n2) n3.
-Proof.
-  intros. destruct n1; destruct n2; destruct n3; auto.
-  unfold G_Counter_max. f_equal. apply Max.max_assoc.
-Qed.
-
+(* Merge two G_Counters. *)
 Definition G_Counter_merge c1 c2 :=
-  ClockMap.map2 G_Counter_max c2 c1.
+  ClockMap.map2 Clock_merge c2 c1.
+
+(* Proofs that the G_Counter merge is a valid LUB. *)
 
 Theorem G_Counter_merge_comm : forall c1 c2,
   ClockMap.Equal (G_Counter_merge c1 c2) (G_Counter_merge c2 c1).
@@ -98,7 +103,7 @@ Proof.
   intros; unfold G_Counter_merge.
   unfold ClockMap.Equal; intro.
   repeat rewrite ClockMapFacts.map2_1bis; auto.
-  apply G_Counter_max_comm.
+  apply Clock_merge_comm.
 Qed.
 
 Theorem G_Counter_merge_idempotent : forall c1,
@@ -107,7 +112,7 @@ Proof.
   intros; unfold G_Counter_merge.
   unfold ClockMap.Equal; intro.
   repeat rewrite ClockMapFacts.map2_1bis; auto.
-  apply G_Counter_max_idempotent.
+  apply Clock_merge_idempotent.
 Qed.
 
 Theorem G_Counter_merge_assoc : forall c1 c2 c3,
@@ -118,5 +123,27 @@ Proof.
   intros; unfold G_Counter_merge.
   unfold ClockMap.Equal; intro.
   repeat rewrite ClockMapFacts.map2_1bis; auto.
-  repeat rewrite <- G_Counter_max_assoc; reflexivity.
+  repeat rewrite <- Clock_merge_assoc; reflexivity.
 Qed.
+
+(* Positive/negative counter, two vector clocks. *)
+
+(* Initialize an empty PN_Counter. *)
+Definition PN_Counter := (G_Counter, G_Counter).
+Definition PN_Counter_init := PN_Counter.
+
+(* Increment a PN_Counter for a particular actor. *)
+Definition PN_Counter_incr actor (clocks : (ClockMap.t nat * ClockMap.t nat)) :=
+  pair (G_Counter_incr actor (fst clocks)) (snd clocks).
+
+(* Decrement a PN_Counter for a particular actor. *)
+Definition PN_Counter_decr actor (clocks : (ClockMap.t nat * ClockMap.t nat)) :=
+  pair (fst clocks) (G_Counter_incr actor (snd clocks)).
+
+(* Reveal the current value of a PN_Counter. *)
+Definition PN_Counter_reveal clocks :=
+  minus (G_Counter_reveal (fst clocks)) (G_Counter_reveal (snd clocks)).
+
+(* Merge two PN_Counters. *)
+Definition PN_Counter_merge c1 c2 :=
+  pair (G_Counter_merge (fst c1) (fst c2)) (G_Counter_merge (snd c1) (snd c2)).
