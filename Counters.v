@@ -77,8 +77,8 @@ Qed.
 (* Grow only counter, representing a vector of clocks which are nats. *)
 
 (* Initialize an empty G_Counter. *)
-Definition G_Counter := ClockMap.empty nat.
-Definition G_Counter_init := G_Counter.
+Definition G_Counter := ClockMap.t nat.
+Definition G_Counter_init : G_Counter := ClockMap.empty nat.
 
 (* Increment a G_Counter for a particular actor. *)
 Definition G_Counter_incr actor clocks :=
@@ -133,15 +133,15 @@ Qed.
 (* Positive/negative counter, two vector clocks. *)
 
 (* Initialize an empty PN_Counter. *)
-Definition PN_Counter := (G_Counter, G_Counter).
-Definition PN_Counter_init := PN_Counter.
+Definition PN_Counter := (G_Counter * G_Counter)%type.
+Definition PN_Counter_init : PN_Counter := (G_Counter_init, G_Counter_init).
 
 (* Increment a PN_Counter for a particular actor. *)
-Definition PN_Counter_incr actor (clocks : (ClockMap.t nat * ClockMap.t nat)) :=
+Definition PN_Counter_incr actor (clocks : PN_Counter) :=
   pair (G_Counter_incr actor (fst clocks)) (snd clocks).
 
 (* Decrement a PN_Counter for a particular actor. *)
-Definition PN_Counter_decr actor (clocks : (ClockMap.t nat * ClockMap.t nat)) :=
+Definition PN_Counter_decr actor (clocks : PN_Counter) :=
   pair (fst clocks) (G_Counter_incr actor (snd clocks)).
 
 (* Reveal the current value of a PN_Counter. *)
@@ -153,7 +153,7 @@ Definition PN_Counter_merge c1 c2 :=
   pair (G_Counter_merge (fst c1) (fst c2)) (G_Counter_merge (snd c1) (snd c2)).
 
 (* Verify that two PN_Counters are equal. *)
-Definition PN_Counter_equal (c1 c2 : (ClockMap.t nat * ClockMap.t nat)) :=
+Definition PN_Counter_equal (c1 c2 : PN_Counter) :=
   ClockMap.Equal (fst c1) (fst c2) /\ ClockMap.Equal (snd c1) (snd c2).
 
 (* Proof that the PN_Counter merge is a valid LUB. *)
