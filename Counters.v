@@ -1,3 +1,11 @@
+(**
+   State-based counters, as described in:
+
+   A Comprehensive Study of Convergent and Commutative Replicated Data Types
+   by Shapiro, Preguiça, Baquero, Zawirski.
+   http://hal.upmc.fr/docs/00/55/55/88/PDF/techreport.pdf
+**)
+
 Require Import Coq.FSets.FMaps.
 Require Import Coq.FSets.FSets.
 Require Import Coq.Arith.Arith.
