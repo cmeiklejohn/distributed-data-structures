@@ -109,7 +109,7 @@ Definition G_Counter_equal (c1 c2 : G_Counter) :=
 
 (* Compare two G_Counters. *)
 Definition G_Counter_compare (c1 c2 : G_Counter) :=
-  ClockMap.Equiv le c1 c2.
+  ClockMap.Equivb leb c1 c2.
 
 (* Proofs that the G_Counter merge is a valid LUB. *)
 
@@ -226,11 +226,11 @@ Record CRDT := CvRDT {
                    merge : carrier -> carrier -> carrier;
                    query : carrier -> nat;
                    update : carrier -> nat -> carrier;
-                   compare: carrier -> carrier -> bool;
+                   compare: carrier -> carrier -> Prop;
                    merge_idemp : forall x, merge x x = x;
                    merge_comm : forall x y, merge x y = merge y x;
                    merge_assoc : forall x y z, 
                                    merge x (merge y z) = merge (merge x y) z;
-                   update_mono: forall x y, compare x (update x y) = true
+                   update_mono: forall x y, compare x (update x y)
                  }.
 
