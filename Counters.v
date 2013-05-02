@@ -82,10 +82,13 @@ Proof.
   unfold Clock_merge. f_equal. apply Max.max_assoc.
 Qed.
 
+(* State-based convergent replicated data type *)
+Definition CvRDT := Type.
+
 (* Grow only counter, representing a vector of clocks which are nats. *)
 
 (* Initialize an empty G_Counter. *)
-Definition G_Counter := ClockMap.t nat.
+Definition G_Counter : CvRDT := ClockMap.t nat.
 Definition G_Counter_init : G_Counter := ClockMap.empty nat.
 
 (* Increment a G_Counter for a particular actor. *)
@@ -141,7 +144,7 @@ Qed.
 (* Positive/negative counter, two vector clocks. *)
 
 (* Initialize an empty PN_Counter. *)
-Definition PN_Counter := (G_Counter * G_Counter)%type.
+Definition PN_Counter : CvRDT := (G_Counter * G_Counter)%type.
 Definition PN_Counter_init : PN_Counter := (G_Counter_init, G_Counter_init).
 
 (* Increment a PN_Counter for a particular actor. *)
