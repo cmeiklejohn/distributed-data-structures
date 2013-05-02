@@ -211,13 +211,26 @@ Proof.
     repeat rewrite <- Clock_merge_assoc; reflexivity.
 Qed.
 
-(* CRDT type, with CvRDT constructor. *)
+(* CRDT type, with CvRDT constructor.
+
+   Defines the 4 basic operations on the CvRDT:
+    merge, query, update and compare.
+
+   States 4 facts about the CvRDT: merge is idempotent, commutative, and 
+    associative, as well as the update function monotonically advancing.
+
+*)
 
 Record CRDT := CvRDT {
-                       carrier : Type; 
-                       merge : carrier -> carrier -> carrier;
-                       idemp : forall x, merge x x = x;
-                       comm : forall x y, merge x y = merge y x;
-                       assoc : forall x y z, merge x (merge y z) = merge (merge x y) z
-}.
+                   carrier : Type; 
+                   merge : carrier -> carrier -> carrier;
+                   query : carrier -> nat;
+                   update : carrier -> nat -> carrier;
+                   compare: carrier -> carrier -> bool;
+                   merge_idemp : forall x, merge x x = x;
+                   merge_comm : forall x y, merge x y = merge y x;
+                   merge_assoc : forall x y z, 
+                                   merge x (merge y z) = merge (merge x y) z;
+                   update_mono: forall x y, compare x (update x y) = true
+                 }.
 
