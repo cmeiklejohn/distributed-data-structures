@@ -107,6 +107,10 @@ Definition G_Counter_merge c1 c2 :=
 Definition G_Counter_equal (c1 c2 : G_Counter) :=
   ClockMap.Equal c1 c2.
 
+(* Compare two G_Counters. *)
+Definition G_Counter_compare (c1 c2 : G_Counter) :=
+  ClockMap.Equiv le c1 c2.
+
 (* Proofs that the G_Counter merge is a valid LUB. *)
 
 Theorem G_Counter_merge_comm : forall c1 c2,
@@ -159,6 +163,10 @@ Definition PN_Counter_reveal clocks :=
 (* Merge two PN_Counters. *)
 Definition PN_Counter_merge c1 c2 :=
   pair (G_Counter_merge (fst c1) (fst c2)) (G_Counter_merge (snd c1) (snd c2)).
+
+(* Compare two G_Counters. *)
+Definition PN_Counter_compare (c1 c2 : PN_Counter) :=
+  and (G_Counter_compare (fst c1) (fst c2)) (G_Counter_compare (snd c1) (snd c2)).
 
 (* Verify that two PN_Counters are equal. *)
 Definition PN_Counter_equal (c1 c2 : PN_Counter) :=
