@@ -82,13 +82,10 @@ Proof.
   unfold Clock_merge. f_equal. apply Max.max_assoc.
 Qed.
 
-(* State-based convergent replicated data type *)
-Definition CvRDT := Type.
-
 (* Grow only counter, representing a vector of clocks which are nats. *)
 
 (* Initialize an empty G_Counter. *)
-Definition G_Counter : CvRDT := ClockMap.t nat.
+Definition G_Counter := ClockMap.t nat.
 Definition G_Counter_init : G_Counter := ClockMap.empty nat.
 
 (* Increment a G_Counter for a particular actor. *)
@@ -107,7 +104,7 @@ Definition G_Counter_merge c1 c2 :=
   ClockMap.map2 Clock_merge c2 c1.
 
 (* Verify that two G_Counters are equal. *)
-Definition G_Counter_equal (c1 c2 : ClockMap.t nat) :=
+Definition G_Counter_equal (c1 c2 : G_Counter) :=
   ClockMap.Equal c1 c2.
 
 (* Proofs that the G_Counter merge is a valid LUB. *)
@@ -144,7 +141,7 @@ Qed.
 (* Positive/negative counter, two vector clocks. *)
 
 (* Initialize an empty PN_Counter. *)
-Definition PN_Counter : CvRDT := (G_Counter * G_Counter)%type.
+Definition PN_Counter := (G_Counter * G_Counter)%type.
 Definition PN_Counter_init : PN_Counter := (G_Counter_init, G_Counter_init).
 
 (* Increment a PN_Counter for a particular actor. *)
@@ -194,7 +191,7 @@ Proof.
 Qed.
 
 Theorem PN_Counter_merge_assoc : forall c1 c2 c3,
-  PN_Counter_equal                                
+  PN_Counter_equal
     (PN_Counter_merge c1 (PN_Counter_merge c2 c3))
     (PN_Counter_merge (PN_Counter_merge c1 c2) c3).
 Proof.
