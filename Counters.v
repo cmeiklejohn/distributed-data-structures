@@ -202,3 +202,22 @@ Proof.
     repeat rewrite ClockMapFacts.map2_1bis; auto;
     repeat rewrite <- Clock_merge_assoc; reflexivity.
 Qed.
+
+(* The merge function on a state-based CRDT, the CvRDT, must produce a
+   least upper bound.  We verify this using proofs of associativity, 
+   commutativity and idempotentcy. *)
+
+Definition merge_idempotent (A : Type) (f : A -> A -> A) :=
+  forall x, f x x = x.
+
+Definition merge_assoc (A : Type) (f : A -> A -> A) :=
+  forall x y z, f x (f y z) = f (f x y) z.
+
+Definition merge_comm (A : Type) (f : A -> A -> A) :=
+  forall x y, f x y = f y x.
+
+Inductive CRDT : Type -> Prop :=
+  CvRDT : forall x y, merge_idempotent x y ->
+                      merge_assoc x y ->
+                      merge_comm x y ->
+                      CRDT x.
