@@ -111,36 +111,7 @@ Definition G_Counter_equal (c1 c2 : G_Counter) :=
 Definition G_Counter_compare (c1 c2 : G_Counter) :=
   ClockMap.Equivb leb c1 c2.
 
-(* Proofs that the G_Counter merge is a valid LUB. *)
 
-Theorem G_Counter_merge_comm : forall c1 c2,
-  G_Counter_equal (G_Counter_merge c1 c2) (G_Counter_merge c2 c1).
-Proof.
-  intros; unfold G_Counter_merge.
-  unfold ClockMap.Equal; intro.
-  repeat rewrite ClockMapFacts.map2_1bis; auto.
-  apply Clock_merge_comm.
-Qed.
-
-Theorem G_Counter_merge_idempotent : forall c1,
-  G_Counter_equal (G_Counter_merge c1 c1) c1.
-Proof.
-  intros; unfold G_Counter_merge.
-  unfold ClockMap.Equal; intro.
-  repeat rewrite ClockMapFacts.map2_1bis; auto.
-  apply Clock_merge_idempotent.
-Qed.
-
-Theorem G_Counter_merge_assoc : forall c1 c2 c3,
-  G_Counter_equal 
-    (G_Counter_merge c1 (G_Counter_merge c2 c3))
-    (G_Counter_merge (G_Counter_merge c1 c2) c3).
-Proof.
-  intros; unfold G_Counter_merge.
-  unfold ClockMap.Equal; intro.
-  repeat rewrite ClockMapFacts.map2_1bis; auto.
-  repeat rewrite <- Clock_merge_assoc; reflexivity.
-Qed.
 
 (* Positive/negative counter, two vector clocks. *)
 
@@ -171,6 +142,98 @@ Definition PN_Counter_compare (c1 c2 : PN_Counter) :=
 (* Verify that two PN_Counters are equal. *)
 Definition PN_Counter_equal (c1 c2 : PN_Counter) :=
   ClockMap.Equal (fst c1) (fst c2) /\ ClockMap.Equal (snd c1) (snd c2).
+
+(* CRDT type, with CvRDT constructor.
+
+   Defines the 4 basic operations on the CvRDT:
+    merge, query, update and compare.
+
+   States 5 facts about the CvRDT: merge is idempotent, commutative, and 
+    associative, advances the lattice, 
+    as well as the update function monotonically advancing.
+
+*)
+
+Record CRDT := CvRDT {
+                   carrier : Type; 
+                   merge : carrier -> carrier -> carrier;
+                   query : carrier -> nat;
+                   update : nat -> carrier -> carrier;
+                   compare: carrier -> carrier -> Prop;
+                   equal : carrier -> carrier -> Prop;
+                   merge_idemp : forall x, equal (merge x x) x;
+                   merge_comm : forall x y, equal (merge x y) (merge y x);
+                   merge_assoc : forall x y z, 
+                                   equal (merge x (merge y z)) (merge (merge x y) z);
+                   update_mono: forall x y, compare x (update y x);
+                   merge_lub : forall x y, compare x (merge x y)
+                 }.
+
+Theorem G_Counter_merge_comm : forall c1 c2,
+  G_Counter_equal (G_Counter_merge c1 c2) (G_Counter_merge c2 c1).
+Proof.
+  intros; unfold G_Counter_merge.
+  unfold ClockMap.Equal; intro.
+  repeat rewrite ClockMapFacts.map2_1bis; auto.
+  apply Clock_merge_comm.
+Qed.
+
+Theorem G_Counter_merge_idempotent : forall c1,
+  G_Counter_equal (G_Counter_merge c1 c1) c1.
+Proof.
+  intros; unfold G_Counter_merge.
+  unfold ClockMap.Equal; intro.
+  repeat rewrite ClockMapFacts.map2_1bis; auto.
+  apply Clock_merge_idempotent.
+Qed.
+
+Theorem G_Counter_merge_assoc : forall c1 c2 c3,
+  G_Counter_equal
+    (G_Counter_merge c1 (G_Counter_merge c2 c3))
+    (G_Counter_merge (G_Counter_merge c1 c2) c3).
+Proof.
+  intros; unfold G_Counter_merge.
+  unfold ClockMap.Equal; intro.
+  repeat rewrite ClockMapFacts.map2_1bis; auto.
+  repeat rewrite <- Clock_merge_assoc; reflexivity.
+Qed.
+
+Theorem G_Counter_update_mono : forall clocks actor,
+  G_Counter_compare clocks (G_Counter_incr actor clocks).
+Proof.
+  intros.
+  unfold G_Counter_compare.
+  rewrite <- ClockMapFacts.Equal_Equivb_eqdec.
+  unfold ClockMap.Equal; intro.
+  unfold G_Counter_incr.
+  destruct (ClockMap.find actor clocks).
+
+Admitted.
+
+Theorem G_Counter_merge_lub : forall c1 c2,
+  G_Counter_compare c1 (G_Counter_merge c1 c2).
+Proof.
+  intros.
+  unfold G_Counter_compare.
+  unfold G_Counter_merge.
+  rewrite <- ClockMapFacts.Equal_Equivb.
+  unfold ClockMap.Equal; intro.
+  rewrite ClockMapFacts.map2_1bis; auto.
+  rewrite Clock_merge_comm. 
+Admitted.
+
+Eval compute in CvRDT 
+                  G_Counter 
+                  G_Counter_merge 
+                  G_Counter_reveal 
+                  G_Counter_incr 
+                  G_Counter_compare
+                  G_Counter_equal
+                  G_Counter_merge_idempotent
+                  G_Counter_merge_comm
+                  G_Counter_merge_assoc
+                  G_Counter_update_mono
+                  G_Counter_merge_lub.
 
 (* Proof that the PN_Counter merge is a valid LUB. *)
 
@@ -211,28 +274,25 @@ Proof.
     repeat rewrite <- Clock_merge_assoc; reflexivity.
 Qed.
 
-(* CRDT type, with CvRDT constructor.
+Theorem PN_Counter_update_mono : forall clocks actor,
+  PN_Counter_compare clocks (PN_Counter_incr actor clocks).
+Proof.
+Admitted.
 
-   Defines the 4 basic operations on the CvRDT:
-    merge, query, update and compare.
+Theorem PN_Counter_merge_lub : forall c1 c2,
+  PN_Counter_compare c1 (PN_Counter_merge c1 c2).
+Proof.
+Admitted.
 
-   States 5 facts about the CvRDT: merge is idempotent, commutative, and 
-    associative, advances the lattice, 
-    as well as the update function monotonically advancing.
-
-*)
-
-Record CRDT := CvRDT {
-                   carrier : Type; 
-                   merge : carrier -> carrier -> carrier;
-                   query : carrier -> nat;
-                   update : carrier -> nat -> carrier;
-                   compare: carrier -> carrier -> Prop;
-                   merge_lub : forall x y, compare x (merge x y) /\ compare y (merge x y);
-                   merge_idemp : forall x, merge x x = x;
-                   merge_comm : forall x y, merge x y = merge y x;
-                   merge_assoc : forall x y z, 
-                                   merge x (merge y z) = merge (merge x y) z;
-                   update_mono: forall x y, compare x (update x y)
-                 }.
-
+Eval compute in CvRDT 
+                  PN_Counter 
+                  PN_Counter_merge 
+                  PN_Counter_reveal 
+                  PN_Counter_incr 
+                  PN_Counter_compare
+                  PN_Counter_equal
+                  PN_Counter_merge_idempotent
+                  PN_Counter_merge_comm
+                  PN_Counter_merge_assoc
+                  PN_Counter_update_mono
+                  PN_Counter_merge_lub.
