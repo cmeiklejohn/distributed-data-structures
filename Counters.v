@@ -227,6 +227,7 @@ Record CRDT := CvRDT {
                    query : carrier -> nat;
                    update : carrier -> nat -> carrier;
                    compare: carrier -> carrier -> Prop;
+                   merge_lub : forall x y, compare x (merge x y) /\ compare y (merge x y);
                    merge_idemp : forall x, merge x x = x;
                    merge_comm : forall x y, merge x y = merge y x;
                    merge_assoc : forall x y z, 
