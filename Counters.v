@@ -216,8 +216,9 @@ Qed.
    Defines the 4 basic operations on the CvRDT:
     merge, query, update and compare.
 
-   States 4 facts about the CvRDT: merge is idempotent, commutative, and 
-    associative, as well as the update function monotonically advancing.
+   States 5 facts about the CvRDT: merge is idempotent, commutative, and 
+    associative, advances the lattice, 
+    as well as the update function monotonically advancing.
 
 *)
 
