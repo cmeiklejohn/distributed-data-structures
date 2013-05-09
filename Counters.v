@@ -107,18 +107,6 @@ Proof.
   destruct n; auto. f_equal. simpl. rewrite leb_correct; auto.
 Qed.
 
-Lemma Clock_find_after_add : forall x m (e : nat),
-  ClockMap.find x (ClockMap.add x e m) = Some e.
-Proof.
-Admitted.
-
-Lemma Clock_find_no_change : forall x y m n,
-  x <> y ->
-  (ClockMap.find (elt:=nat) x m) =
-  (ClockMap.find (elt:=nat) x (ClockMap.add y (S n) m)).
-Proof.
-Admitted.
-
 (* Grow only counter, representing a vector of clocks which are nats. *)
 
 (* Initialize an empty G_Counter. *)
@@ -239,13 +227,12 @@ Lemma G_Counter_update_mono_neq_find : forall x y clocks,
   (ClockMap.find (elt:=nat) y clocks) =
   (ClockMap.find (elt:=nat) y (G_Counter_incr x clocks)).
 Proof.
-  intros.
-  unfold G_Counter_incr.
+  intros; unfold G_Counter_incr.
   destruct (ClockMap.find (elt:=nat) x clocks); simpl.
-  repeat rewrite ClockMapFacts.add_neq_o. reflexivity. 
-  assumption.
-  repeat rewrite ClockMapFacts.add_neq_o. reflexivity.
-  assumption.
+    repeat rewrite ClockMapFacts.add_neq_o. 
+      reflexivity. assumption.
+    repeat rewrite ClockMapFacts.add_neq_o.
+      reflexivity. assumption.
 Qed.
 
 Lemma G_Counter_update_mono_eq_true : forall x y clocks, 
@@ -255,7 +242,7 @@ Lemma G_Counter_update_mono_eq_true : forall x y clocks,
 Proof.
   intros; unfold G_Counter_incr; rewrite <- H.
   destruct (ClockMap.find (elt:=nat) x clocks);
-    rewrite Clock_find_after_add; simpl. reflexivity. reflexivity.
+    rewrite ClockMapFacts.add_eq_o; compute; reflexivity.
 Qed.
 
 Lemma G_Counter_update_mono_neq_true : forall x y clocks, 
@@ -265,6 +252,7 @@ Lemma G_Counter_update_mono_neq_true : forall x y clocks,
 Proof.
   intros; unfold G_Counter_incr.
   destruct (ClockMap.find (elt:=nat) y clocks).
+    rewrite ClockMapFacts.add_neq_o.
 Admitted.
 
 Lemma G_Counter_update_mono_eq : forall x y clocks,
@@ -274,7 +262,9 @@ Lemma G_Counter_update_mono_eq : forall x y clocks,
 Proof.
   intros; unfold G_Counter_incr; rewrite <- H.
   destruct (ClockMap.find (elt:=nat) x clocks);
-    rewrite Clock_find_after_add; simpl; f_equal. rewrite leb_correct; auto.
+    rewrite ClockMapFacts.add_eq_o; simpl; f_equal.
+      rewrite leb_correct.
+    auto. auto. auto. auto.
 Qed.
 
 Lemma G_Counter_update_mono_neq : forall x y clocks,
@@ -282,6 +272,11 @@ Lemma G_Counter_update_mono_neq : forall x y clocks,
   Clock_compare (ClockMap.find (elt:=nat) y clocks)
                 (ClockMap.find (elt:=nat) y (G_Counter_incr x clocks)) = Some true.
 Proof.
+  intros; unfold G_Counter_incr.
+  destruct (ClockMap.find (elt:=nat) x clocks).
+    rewrite ClockMapFacts.add_neq_o. rewrite Clock_compare_refl. 
+    destruct (ClockMap.find (elt:=nat) y clocks); simpl. 
+      reflexivity.
 Admitted.
 
 Theorem G_Counter_update_mono : forall clocks actor,
