@@ -59,6 +59,24 @@ Definition Clock_merge (n1 n2 : option nat) :=
     | Some n1', Some n2' => Some (max n1' n2')
   end.
 
+(* Compare two clocks. *)
+Definition Clock_compare (n1 n2 : option nat) :=
+  match n1, n2 with
+    | None, None => None
+    | Some n, None => Some false
+    | None, Some n => Some true
+    | Some n1', Some n2' => Some (leb n1' n2')
+  end.
+
+(* Always return true, except for the None None case *)
+Definition Clock_true (n1 n2 : option nat) :=
+  match n1, n2 with
+    | None, None => None
+    | Some n, None => Some true
+    | None, Some n => Some true
+    | Some n1', Some n2' => Some true
+  end.
+
 (* Proofs of the clock merging being a valid LUB. *)
 
 Lemma Clock_merge_comm : forall n1 n2, 
@@ -82,6 +100,18 @@ Proof.
   unfold Clock_merge. f_equal. apply Max.max_assoc.
 Qed.
 
+Lemma Clock_compare_refl : forall x,
+  Clock_compare x x = Clock_true x x.
+Proof.
+  intros; destruct x; auto. unfold Clock_compare. unfold Clock_true.
+  destruct n; auto. f_equal. simpl. rewrite leb_correct; auto.
+Qed.
+
+Lemma Clock_find_after_add : forall x m (e : nat),
+  ClockMap.find x (ClockMap.add x e m) = Some e.
+Proof.
+Admitted.
+
 (* Grow only counter, representing a vector of clocks which are nats. *)
 
 (* Initialize an empty G_Counter. *)
@@ -101,17 +131,15 @@ Definition G_Counter_reveal clocks :=
 
 (* Merge two G_Counters. *)
 Definition G_Counter_merge c1 c2 :=
-  ClockMap.map2 Clock_merge c2 c1.
+  ClockMap.map2 Clock_merge c1 c2.
 
 (* Verify that two G_Counters are equal. *)
 Definition G_Counter_equal (c1 c2 : G_Counter) :=
   ClockMap.Equal c1 c2.
 
-(* Compare two G_Counters. *)
 Definition G_Counter_compare (c1 c2 : G_Counter) :=
-  ClockMap.Equivb leb c1 c2.
-
-
+  ClockMap.Equal
+    (ClockMap.map2 Clock_compare c1 c2) (ClockMap.map2 Clock_true c1 c2).
 
 (* Positive/negative counter, two vector clocks. *)
 
@@ -154,7 +182,8 @@ Definition PN_Counter_equal (c1 c2 : PN_Counter) :=
 
 *)
 
-Record CRDT := CvRDT {
+Record CRDT := CvRDT
+                 {
                    carrier : Type; 
                    merge : carrier -> carrier -> carrier;
                    query : carrier -> nat;
@@ -198,28 +227,40 @@ Proof.
   repeat rewrite <- Clock_merge_assoc; reflexivity.
 Qed.
 
+Lemma G_Counter_update_mono_find_neq : forall x y clocks,
+  x <> y ->
+  (ClockMap.find (elt:=nat) y clocks) =
+  (ClockMap.find (elt:=nat) y (G_Counter_incr x clocks)).
+Proof.
+  intros.
+  unfold G_Counter_incr.
+  destruct (ClockMap.find (elt:=nat) x clocks); simpl.
+  repeat rewrite ClockMapFacts.add_neq_o. reflexivity. 
+  assumption.
+  repeat rewrite ClockMapFacts.add_neq_o. reflexivity.
+  assumption.
+Qed.
+
+Lemma G_Counter_update_mono_find_eq : forall x y clocks,
+  x = y ->
+  Clock_compare (ClockMap.find (elt:=nat) y clocks)
+                (ClockMap.find (elt:=nat) y (G_Counter_incr x clocks)) = Some true.
+Proof.
+  intros; unfold G_Counter_incr; rewrite <- H.
+  destruct (ClockMap.find (elt:=nat) x clocks);
+    rewrite Clock_find_after_add; simpl; f_equal. rewrite leb_correct; auto.
+Qed.
+
 Theorem G_Counter_update_mono : forall clocks actor,
   G_Counter_compare clocks (G_Counter_incr actor clocks).
 Proof.
-  intros.
-  unfold G_Counter_compare.
-  rewrite <- ClockMapFacts.Equal_Equivb_eqdec.
-  unfold ClockMap.Equal; intro.
-  unfold G_Counter_incr.
-  destruct (ClockMap.find actor clocks).
-
+  intros; unfold G_Counter_compare.
+  unfold ClockMap.Equal. unfold G_Counter_incr.
 Admitted.
 
 Theorem G_Counter_merge_lub : forall c1 c2,
   G_Counter_compare c1 (G_Counter_merge c1 c2).
 Proof.
-  intros.
-  unfold G_Counter_compare.
-  unfold G_Counter_merge.
-  rewrite <- ClockMapFacts.Equal_Equivb.
-  unfold ClockMap.Equal; intro.
-  rewrite ClockMapFacts.map2_1bis; auto.
-  rewrite Clock_merge_comm. 
 Admitted.
 
 Eval compute in CvRDT 
