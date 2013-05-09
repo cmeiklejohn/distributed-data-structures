@@ -62,16 +62,15 @@ Definition Clock_merge (n1 n2 : option nat) :=
 (* Compare two clocks. *)
 Definition Clock_compare (n1 n2 : option nat) :=
   match n1, n2 with
-    | None, None => None
+    | None, None => Some true
     | Some n, None => Some false
     | None, Some n => Some true
     | Some n1', Some n2' => Some (leb n1' n2')
   end.
 
-(* Always return true, except for the None None case *)
 Definition Clock_true (n1 n2 : option nat) :=
   match n1, n2 with
-    | None, None => None
+    | None, None => Some true
     | Some n, None => Some true
     | None, Some n => Some true
     | Some n1', Some n2' => Some true
@@ -105,6 +104,12 @@ Lemma Clock_compare_refl : forall x,
 Proof.
   intros; destruct x; auto. unfold Clock_compare. unfold Clock_true.
   destruct n; auto. f_equal. simpl. rewrite leb_correct; auto.
+Qed.
+
+Lemma Clock_true_true : forall x,
+  Clock_true x x = Some true.
+Proof.
+  intros; destruct x; reflexivity.
 Qed.
 
 (* Grow only counter, representing a vector of clocks which are nats. *)
@@ -246,14 +251,18 @@ Proof.
 Qed.
 
 Lemma G_Counter_update_mono_neq_true : forall x y clocks, 
-  x <> y ->
+  y <> x ->
   Clock_true (ClockMap.find (elt:=nat) x clocks)
              (ClockMap.find (elt:=nat) x (G_Counter_incr y clocks)) = Some true.
 Proof.
   intros; unfold G_Counter_incr.
-  destruct (ClockMap.find (elt:=nat) y clocks).
-    rewrite ClockMapFacts.add_neq_o.
-Admitted.
+  destruct (ClockMap.find (elt:=nat) y clocks);
+    rewrite ClockMapFacts.add_neq_o. 
+  rewrite Clock_true_true. reflexivity.
+  assumption. 
+  rewrite Clock_true_true; reflexivity.
+  assumption.
+Qed.
 
 Lemma G_Counter_update_mono_eq : forall x y clocks,
   x = y ->
@@ -276,8 +285,17 @@ Proof.
   destruct (ClockMap.find (elt:=nat) x clocks).
     rewrite ClockMapFacts.add_neq_o. rewrite Clock_compare_refl. 
     destruct (ClockMap.find (elt:=nat) y clocks); simpl. 
-      reflexivity.
-Admitted.
+    reflexivity.
+    reflexivity.
+    assumption.
+    rewrite ClockMapFacts.add_neq_o. 
+    rewrite Clock_compare_refl.
+    rewrite Clock_true_true.
+    reflexivity.
+    assumption.
+Qed.
+
+SearchAbout ClockMap.map2.
 
 Theorem G_Counter_update_mono : forall clocks actor,
   G_Counter_compare clocks (G_Counter_incr actor clocks).
@@ -285,7 +303,7 @@ Proof.
   intros; unfold G_Counter_compare.
   unfold ClockMap.Equal; intro.
   repeat rewrite ClockMapFacts.map2_1bis; auto.
-  elim (eq_nat_dec actor y); intro.
+  elim (eq_nat_dec actor y); intro. 
   rewrite G_Counter_update_mono_eq. 
   rewrite G_Counter_update_mono_eq_true.
   reflexivity.
@@ -294,6 +312,8 @@ Proof.
   rewrite G_Counter_update_mono_neq. 
   rewrite G_Counter_update_mono_neq_true.
   reflexivity.
+  assumption.
+  assumption.
 Admitted.
 
 Theorem G_Counter_merge_lub : forall c1 c2,
@@ -301,7 +321,7 @@ Theorem G_Counter_merge_lub : forall c1 c2,
 Proof.
 Admitted.
 
-Eval compute in CvRDT 
+Definition the_G_Counter := CvRDT
                   G_Counter 
                   G_Counter_merge 
                   G_Counter_reveal 
@@ -363,7 +383,7 @@ Theorem PN_Counter_merge_lub : forall c1 c2,
 Proof.
 Admitted.
 
-Eval compute in CvRDT 
+Definition the_PN_Counter := CvRDT
                   PN_Counter 
                   PN_Counter_merge 
                   PN_Counter_reveal 
