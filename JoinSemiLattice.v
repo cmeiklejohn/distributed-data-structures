@@ -1,9 +1,18 @@
+(**
+   Bounded join-semilattices over natural numbers.
+
+   Logic and Lattices in Distributed Programming
+   by Conway, Marczak, Alvaro, Hellerstein, Maier.
+   http://db.cs.berkeley.edu/papers/UCB-lattice-tr.pdf
+**)
+
 Require Export Max.
 Require Export Min.
 Require Export Sets.Ensembles.
 
 Module JoinSemiLattice.
 
+(* Boolean lattice, values advance from false -> true *)
 Inductive lbool : Type :=
   | LBoolValue  : bool -> lbool.
 
@@ -19,6 +28,7 @@ Definition lbool_merge lb1 lb2 :=
     | (LBoolValue b1, LBoolValue b2) => (LBoolValue (orb b1 b2))
   end.
 
+(* Proofs regarding the merge operation follows ACI *)
 Theorem lbool_merge_assoc : forall (lb1 lb2 lb3 : lbool),
   lbool_merge (lbool_merge lb1 lb2) lb3 =
     lbool_merge lb3 (lbool_merge lb1 lb2).
@@ -40,6 +50,7 @@ Proof with eauto.
   induction lb... destruct b...
 Qed.
 
+(* Max-value lattice, values monotonically advance upwards. *)
 Inductive lmax_nat : Type :=
   | LMaxNatValue  : forall (n : nat), lmax_nat.
 
@@ -55,6 +66,7 @@ Definition lmax_nat_merge lm1 lm2 :=
     | (LMaxNatValue n1, LMaxNatValue n2) => (LMaxNatValue (max n1 n2))
   end.
 
+(* Proofs regarding the merge operation follows ACI *)
 Theorem lmax_nat_merge_assoc : forall (lm1 lm2 lm3 : lmax_nat),
   lmax_nat_merge (lmax_nat_merge lm1 lm2) lm3 =
     lmax_nat_merge lm3 (lmax_nat_merge lm1 lm2).
@@ -77,6 +89,7 @@ Proof with eauto.
     rewrite max_idempotent...
 Qed.
 
+(* Min-value lattice, values monotonically advance downwards. *)
 Inductive lmin_nat : Type :=
   | LMinNatValue  : forall (n : nat), lmin_nat.
 
@@ -92,6 +105,7 @@ Definition lmin_nat_merge lm1 lm2 :=
     | (LMinNatValue n1, LMinNatValue n2) => (LMinNatValue (min n1 n2))
   end.
 
+(* Proofs regarding the merge operation follows ACI *)
 Theorem lmin_nat_merge_assoc : forall (lm1 lm2 lm3 : lmin_nat),
   lmin_nat_merge (lmin_nat_merge lm1 lm2) lm3 =
     lmin_nat_merge lm3 (lmin_nat_merge lm1 lm2).
