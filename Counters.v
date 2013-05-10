@@ -207,8 +207,8 @@ Proof.
   apply Clock_merge_comm.
 Qed.
 
-Theorem G_Counter_merge_idempotent : forall c1,
-  G_Counter_equal (G_Counter_merge c1 c1) c1.
+Theorem G_Counter_merge_idempotent : forall clocks,
+  G_Counter_equal (G_Counter_merge clocks clocks) clocks.
 Proof.
   intros; unfold G_Counter_merge.
   unfold ClockMap.Equal; intro.
@@ -258,10 +258,8 @@ Proof.
   intros; unfold G_Counter_incr.
   destruct (ClockMap.find (elt:=nat) y clocks);
     rewrite ClockMapFacts.add_neq_o. 
-  rewrite Clock_true_true. reflexivity.
-  assumption. 
-  rewrite Clock_true_true; reflexivity.
-  assumption.
+     rewrite Clock_true_true. reflexivity. assumption. 
+     rewrite Clock_true_true; reflexivity. assumption.
 Qed.
 
 Lemma G_Counter_update_mono_eq : forall x y clocks,
@@ -272,8 +270,7 @@ Proof.
   intros; unfold G_Counter_incr; rewrite <- H.
   destruct (ClockMap.find (elt:=nat) x clocks);
     rewrite ClockMapFacts.add_eq_o; simpl; f_equal.
-      rewrite leb_correct.
-    auto. auto. auto. auto.
+      rewrite leb_correct. auto. auto. auto. auto.
 Qed.
 
 Lemma G_Counter_update_mono_neq : forall x y clocks,
@@ -294,8 +291,6 @@ Proof.
     reflexivity.
     assumption.
 Qed.
-
-SearchAbout ClockMap.map2.
 
 Theorem G_Counter_update_mono : forall clocks actor,
   G_Counter_compare clocks (G_Counter_incr actor clocks).
@@ -319,6 +314,9 @@ Admitted.
 Theorem G_Counter_merge_lub : forall c1 c2,
   G_Counter_compare c1 (G_Counter_merge c1 c2).
 Proof.
+  intros; unfold G_Counter_compare.
+  unfold ClockMap.Equal; intro.
+  repeat rewrite ClockMapFacts.map2_1bis; auto.
 Admitted.
 
 Definition the_G_Counter := CvRDT
