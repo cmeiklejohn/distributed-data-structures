@@ -4,6 +4,13 @@
 
 An attempt at modeling various Lattices and CRDTs in Coq and Haskell.
 
+## Files
+
+* ```JoinSemiLattice.v```: An experiment in modeling JoinSemiLattices
+  over naturals as outlined by Conway
+* ```Counters.v```: Work in modeling CvRDTs, specifically G-Counters and
+  PN-Counters as outlined by Shapiro.
+
 ## References
 
 * Conway, Marczak, Alvaro, Hellerstein, Maier, [_Logic and Lattices in Distributed Programming_](http://db.cs.berkeley.edu/papers/UCB-lattice-tr.pdf)
