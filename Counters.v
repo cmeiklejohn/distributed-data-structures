@@ -189,7 +189,7 @@ Record CRDT : Prop := CvRDT
                    merge_assoc : forall x y z, 
                                    equal (merge x (merge y z)) (merge (merge x y) z);
                    update_mono: forall x y, compare x (update y x);
-                   merge_lub : forall x y, compare x (merge x y)
+                   merge_mono : forall x y, compare x (merge x y)
                  }.
 
 Theorem G_Counter_merge_comm : forall c1 c2,
@@ -237,13 +237,27 @@ Proof.
   rewrite ClockMapFacts.add_neq_o; auto. apply Clock_compare_refl. 
 Qed.
 
-Theorem G_Counter_merge_lub : forall c1 c2,
+Lemma leb_max_mono : forall n m,
+  leb n (max n m) = true.
+Proof.
+  intros.
+  generalize dependent m.
+  induction n; induction m; auto with arith; simpl.
+  rewrite leb_correct; auto. rewrite IHn; reflexivity.
+Qed.
+
+Theorem G_Counter_merge_mono : forall c1 c2,
   G_Counter_compare c1 (G_Counter_merge c1 c2).
 Proof.
   intros; unfold G_Counter_compare.
   unfold ClockMap.Equal; intro.
+  unfold Clock_compare, Clock_true, G_Counter_merge.
   repeat rewrite ClockMapFacts.map2_1bis; auto.
-Admitted.
+  destruct (ClockMap.find y c1); 
+    destruct (ClockMap.find y c2); simpl; f_equal.
+  apply leb_max_mono.
+  rewrite leb_correct; auto.
+Qed.
 
 Definition the_G_Counter := CvRDT
                   G_Counter 
@@ -256,7 +270,7 @@ Definition the_G_Counter := CvRDT
                   G_Counter_merge_comm
                   G_Counter_merge_assoc
                   G_Counter_update_mono
-                  G_Counter_merge_lub.
+                  G_Counter_merge_mono.
 
 (* Proof that the PN_Counter merge is a valid LUB. *)
 
@@ -302,7 +316,7 @@ Theorem PN_Counter_update_mono : forall clocks actor,
 Proof.
 Admitted.
 
-Theorem PN_Counter_merge_lub : forall c1 c2,
+Theorem PN_Counter_merge_mono : forall c1 c2,
   PN_Counter_compare c1 (PN_Counter_merge c1 c2).
 Proof.
 Admitted.
@@ -318,4 +332,4 @@ Definition the_PN_Counter := CvRDT
                   PN_Counter_merge_comm
                   PN_Counter_merge_assoc
                   PN_Counter_update_mono
-                  PN_Counter_merge_lub.
+                  PN_Counter_merge_mono.
