@@ -221,20 +221,28 @@ Proof.
   repeat rewrite <- Clock_merge_assoc; reflexivity.
 Qed.
 
+Theorem G_Counter_compare_idempotent : forall clocks,
+  G_Counter_compare clocks clocks.
+Proof.
+  intros; unfold G_Counter_compare; unfold ClockMap.Equal; intro.
+  repeat rewrite ClockMapFacts.map2_1bis; auto.
+  apply Clock_compare_refl.
+Qed.
+
 Theorem G_Counter_update_mono : forall clocks actor,
   G_Counter_compare clocks (G_Counter_incr actor clocks).
 Proof.
   intros; unfold G_Counter_compare; unfold ClockMap.Equal; intro.
   repeat rewrite ClockMapFacts.map2_1bis; auto.
   elim (eq_nat_dec actor y); intro. 
-  subst. unfold Clock_compare, Clock_true. unfold G_Counter_incr. simpl.
-  destruct (ClockMap.find y clocks).
-  rewrite ClockMapFacts.add_eq_o. f_equal. 
-  induction n; auto. reflexivity. reflexivity.
-  unfold G_Counter_incr.
-  destruct (ClockMap.find actor clocks) eqn:factor.
-  rewrite ClockMapFacts.add_neq_o; auto. apply Clock_compare_refl. 
-  rewrite ClockMapFacts.add_neq_o; auto. apply Clock_compare_refl. 
+    subst. unfold Clock_compare, Clock_true. unfold G_Counter_incr. simpl.
+    destruct (ClockMap.find y clocks).
+      rewrite ClockMapFacts.add_eq_o. f_equal. 
+        induction n; auto. reflexivity. reflexivity.
+      unfold G_Counter_incr.
+      destruct (ClockMap.find actor clocks) eqn:factor.
+        rewrite ClockMapFacts.add_neq_o; auto. apply Clock_compare_refl. 
+        rewrite ClockMapFacts.add_neq_o; auto. apply Clock_compare_refl. 
 Qed.
 
 Lemma leb_max_mono : forall n m,
@@ -255,8 +263,8 @@ Proof.
   repeat rewrite ClockMapFacts.map2_1bis; auto.
   destruct (ClockMap.find y c1); 
     destruct (ClockMap.find y c2); simpl; f_equal.
-  apply leb_max_mono.
-  rewrite leb_correct; auto.
+      apply leb_max_mono.
+      rewrite leb_correct; auto.
 Qed.
 
 Definition the_G_Counter := CvRDT
@@ -311,15 +319,28 @@ Proof.
     repeat rewrite <- Clock_merge_assoc; reflexivity.
 Qed.
 
-Theorem PN_Counter_update_mono : forall clocks actor,
+Theorem PN_Counter_incr_update_mono : forall clocks actor,
   PN_Counter_compare clocks (PN_Counter_incr actor clocks).
 Proof.
-Admitted.
+  intros; unfold PN_Counter_compare; unfold PN_Counter_incr; simpl.
+  split. apply G_Counter_update_mono.
+  apply G_Counter_compare_idempotent.
+Qed.
+
+Theorem PN_Counter_decr_update_mono : forall clocks actor,
+  PN_Counter_compare clocks (PN_Counter_decr actor clocks).
+Proof.
+  intros; unfold PN_Counter_compare; unfold PN_Counter_decr; simpl.
+  split. apply G_Counter_compare_idempotent.
+  apply G_Counter_update_mono.
+Qed.
 
 Theorem PN_Counter_merge_mono : forall c1 c2,
   PN_Counter_compare c1 (PN_Counter_merge c1 c2).
 Proof.
-Admitted.
+  intros; unfold PN_Counter_compare; unfold PN_Counter_merge; split; simpl;
+  apply G_Counter_merge_mono.
+Qed.
 
 Definition the_PN_Counter := CvRDT
                   PN_Counter 
