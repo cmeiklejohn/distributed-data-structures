@@ -135,63 +135,7 @@ Definition G_Counter_compare (c1 c2 : G_Counter) :=
   ClockMap.Equal
     (ClockMap.map2 Clock_compare c1 c2) (ClockMap.map2 Clock_true c1 c2).
 
-(* Positive/negative counter, two vector clocks. *)
-
-(* Initialize an empty PN_Counter. *)
-Definition PN_Counter := (G_Counter * G_Counter)%type.
-Definition PN_Counter_init : PN_Counter := (G_Counter_init, G_Counter_init).
-
-(* Increment a PN_Counter for a particular actor. *)
-Definition PN_Counter_incr actor (clocks : PN_Counter) :=
-  pair (G_Counter_incr actor (fst clocks)) (snd clocks).
-
-(* Decrement a PN_Counter for a particular actor. *)
-Definition PN_Counter_decr actor (clocks : PN_Counter) :=
-  pair (fst clocks) (G_Counter_incr actor (snd clocks)).
-
-(* Reveal the current value of a PN_Counter. *)
-Definition PN_Counter_reveal clocks :=
-  minus (G_Counter_reveal (fst clocks)) (G_Counter_reveal (snd clocks)).
-
-(* Merge two PN_Counters. *)
-Definition PN_Counter_merge c1 c2 :=
-  pair (G_Counter_merge (fst c1) (fst c2)) (G_Counter_merge (snd c1) (snd c2)).
-
-(* Compare two G_Counters. *)
-Definition PN_Counter_compare (c1 c2 : PN_Counter) :=
-  and (G_Counter_compare (fst c1) (fst c2)) (G_Counter_compare (snd c1) (snd c2)).
-
-(* Verify that two PN_Counters are equal. *)
-Definition PN_Counter_equal (c1 c2 : PN_Counter) :=
-  ClockMap.Equal (fst c1) (fst c2) /\ ClockMap.Equal (snd c1) (snd c2).
-
-(* CRDT type, with CvRDT constructor.
-
-   Defines the 4 basic operations on the CvRDT:
-    merge, query, update and compare.
-
-   States 5 facts about the CvRDT: merge is idempotent, commutative, and 
-    associative, advances the lattice, 
-    as well as the update function monotonically advancing.
-
-*)
-
-Record CRDT : Prop := CvRDT
-                 {
-                   carrier : Type; 
-                   merge : carrier -> carrier -> carrier;
-                   query : carrier -> nat;
-                   update : nat -> carrier -> carrier;
-                   compare: carrier -> carrier -> Prop;
-                   equal : carrier -> carrier -> Prop;
-                   merge_idemp : forall x, equal (merge x x) x;
-                   merge_comm : forall x y, equal (merge x y) (merge y x);
-                   merge_assoc : forall x y z, 
-                                   equal (merge x (merge y z)) (merge (merge x y) z);
-                   update_mono: forall x y, compare x (update y x);
-                   merge_mono : forall x y, compare x (merge x y)
-                 }.
-
+(* Proofs regarding G_Counter operations. *)
 Theorem G_Counter_merge_comm : forall c1 c2,
   G_Counter_equal (G_Counter_merge c1 c2) (G_Counter_merge c2 c1).
 Proof.
@@ -229,7 +173,7 @@ Proof.
   apply Clock_compare_refl.
 Qed.
 
-Theorem G_Counter_update_mono : forall clocks actor,
+Theorem G_Counter_incr_mono : forall clocks actor,
   G_Counter_compare clocks (G_Counter_incr actor clocks).
 Proof.
   intros; unfold G_Counter_compare; unfold ClockMap.Equal; intro.
@@ -267,21 +211,37 @@ Proof.
       rewrite leb_correct; auto.
 Qed.
 
-Definition the_G_Counter := CvRDT
-                  G_Counter 
-                  G_Counter_merge 
-                  G_Counter_reveal 
-                  G_Counter_incr 
-                  G_Counter_compare
-                  G_Counter_equal
-                  G_Counter_merge_idempotent
-                  G_Counter_merge_comm
-                  G_Counter_merge_assoc
-                  G_Counter_update_mono
-                  G_Counter_merge_mono.
+(* Positive/negative counter, two vector clocks. *)
 
-(* Proof that the PN_Counter merge is a valid LUB. *)
+(* Initialize an empty PN_Counter. *)
+Definition PN_Counter := (G_Counter * G_Counter)%type.
+Definition PN_Counter_init : PN_Counter := (G_Counter_init, G_Counter_init).
 
+(* Increment a PN_Counter for a particular actor. *)
+Definition PN_Counter_incr actor (clocks : PN_Counter) :=
+  pair (G_Counter_incr actor (fst clocks)) (snd clocks).
+
+(* Decrement a PN_Counter for a particular actor. *)
+Definition PN_Counter_decr actor (clocks : PN_Counter) :=
+  pair (fst clocks) (G_Counter_incr actor (snd clocks)).
+
+(* Reveal the current value of a PN_Counter. *)
+Definition PN_Counter_reveal clocks :=
+  minus (G_Counter_reveal (fst clocks)) (G_Counter_reveal (snd clocks)).
+
+(* Merge two PN_Counters. *)
+Definition PN_Counter_merge c1 c2 :=
+  pair (G_Counter_merge (fst c1) (fst c2)) (G_Counter_merge (snd c1) (snd c2)).
+
+(* Compare two G_Counters. *)
+Definition PN_Counter_compare (c1 c2 : PN_Counter) :=
+  and (G_Counter_compare (fst c1) (fst c2)) (G_Counter_compare (snd c1) (snd c2)).
+
+(* Verify that two PN_Counters are equal. *)
+Definition PN_Counter_equal (c1 c2 : PN_Counter) :=
+  ClockMap.Equal (fst c1) (fst c2) /\ ClockMap.Equal (snd c1) (snd c2).
+
+(* Proofs regarding PN_Counter operations. *)
 Theorem PN_Counter_merge_comm : forall c1 c2,
   PN_Counter_equal (PN_Counter_merge c1 c2) (PN_Counter_merge c2 c1).
 Proof.
@@ -319,20 +279,20 @@ Proof.
     repeat rewrite <- Clock_merge_assoc; reflexivity.
 Qed.
 
-Theorem PN_Counter_incr_update_mono : forall clocks actor,
+Theorem PN_Counter_incr_mono : forall clocks actor,
   PN_Counter_compare clocks (PN_Counter_incr actor clocks).
 Proof.
   intros; unfold PN_Counter_compare; unfold PN_Counter_incr; simpl.
-  split. apply G_Counter_update_mono.
+  split. apply G_Counter_incr_mono.
   apply G_Counter_compare_idempotent.
 Qed.
 
-Theorem PN_Counter_decr_update_mono : forall clocks actor,
+Theorem PN_Counter_decr_mono : forall clocks actor,
   PN_Counter_compare clocks (PN_Counter_decr actor clocks).
 Proof.
   intros; unfold PN_Counter_compare; unfold PN_Counter_decr; simpl.
   split. apply G_Counter_compare_idempotent.
-  apply G_Counter_update_mono.
+  apply G_Counter_incr_mono.
 Qed.
 
 Theorem PN_Counter_merge_mono : forall c1 c2,
@@ -342,15 +302,67 @@ Proof.
   apply G_Counter_merge_mono.
 Qed.
 
-Definition the_PN_Counter := CvRDT
-                  PN_Counter 
-                  PN_Counter_merge 
-                  PN_Counter_reveal 
-                  PN_Counter_incr 
-                  PN_Counter_compare
-                  PN_Counter_equal
-                  PN_Counter_merge_idempotent
-                  PN_Counter_merge_comm
-                  PN_Counter_merge_assoc
-                  PN_Counter_update_mono
-                  PN_Counter_merge_mono.
+(* 
+   CRDT type, with CvRDT constructor.
+
+   Defines the 4 basic operations on the CvRDT:
+    merge, query, update and compare.
+
+   States 5 facts about the CvRDT: merge is idempotent, commutative, and 
+    associative, advances the lattice, 
+    as well as the update function monotonically advancing.
+*)
+
+(* Check cons (G_Counter_incr, G_Counter_incr_mono). *)
+
+(* list ((nat -> carrier -> carrier) * *)
+(*       (forall clocks actor, compare clocks (update actor clocks))) -> *)
+(* list ((nat -> carrier -> carrier) *  *)
+(*       (forall clocks actor, compare clocks (update actor clocks))). *)
+(*          ((ClockMap.key -> ClockMap.t nat -> ClockMap.t nat) * *)
+(*           (forall (clocks : G_Counter) (actor : ClockMap.key), *)
+(*            G_Counter_compare clocks (G_Counter_incr actor clocks))) *)
+
+(* Record CRDT : Prop := CvRDT *)
+(*                  { *)
+(*                    carrier : Type;  *)
+(*                    merge : carrier -> carrier -> carrier; *)
+(*                    query : carrier -> nat; *)
+(*                    compare: carrier -> carrier -> Prop; *)
+(*                    update: list ((nat -> carrier -> carrier) * *)
+(*                                 (forall clocks actor, compare clocks ((nat -> carrier -> carrier) actor clocks))) -> *)
+(*                    list ((nat -> carrier -> carrier) *  *)
+(*                          (forall clocks actor, compare clocks ((nat -> carrier -> carrier) actor clocks))); *)
+(*                    equal : carrier -> carrier -> Prop; *)
+(*                    merge_idemp : forall x, equal (merge x x) x; *)
+(*                    merge_comm : forall x y, equal (merge x y) (merge y x); *)
+(*                    merge_assoc : forall x y z,  *)
+(*                                    equal (merge x (merge y z)) (merge (merge x y) z); *)
+(*                    update_mono: forall x y, compare x (update y x); *)
+(*                    merge_mono : forall x y, compare x (merge x y) *)
+(*                  }. *)
+
+(* Definition the_G_Counter := CvRDT *)
+(*                   G_Counter  *)
+(*                   G_Counter_merge  *)
+(*                   G_Counter_reveal  *)
+(*                   [ (G_Counter_incr, G_Counter_incr_mono) ] *)
+(*                   G_Counter_compare *)
+(*                   G_Counter_equal *)
+(*                   G_Counter_merge_idempotent *)
+(*                   G_Counter_merge_comm *)
+(*                   G_Counter_merge_assoc *)
+(*                   G_Counter_merge_mono. *)
+
+(* Definition the_PN_Counter := CvRDT *)
+(*                   PN_Counter  *)
+(*                   PN_Counter_merge  *)
+(*                   PN_Counter_reveal  *)
+(*                   PN_Counter_incr  *)
+(*                   PN_Counter_compare *)
+(*                   PN_Counter_equal *)
+(*                   PN_Counter_merge_idempotent *)
+(*                   PN_Counter_merge_comm *)
+(*                   PN_Counter_merge_assoc *)
+(*                   PN_Counter_update_mono *)
+(*                   PN_Counter_merge_mono. *)
