@@ -43,6 +43,15 @@ Module UOT_to_OrderedTypeLegacy (UOT:OrderedType) <:
   Definition lt_compat := UOT.lt_compat.
 End UOT_to_OrderedTypeLegacy.
 
+Lemma leb_max_mono : forall n m,
+  leb n (max n m) = true.
+Proof.
+  intros.
+  generalize dependent m.
+  induction n; induction m; auto with arith; simpl.
+  rewrite leb_correct; auto. rewrite IHn; reflexivity.
+Qed.
+
 Module Nat_as_Legacy_OT := UOT_to_OrderedTypeLegacy (Nat_as_OT).
 
 (* Map of clocks, which are nat -> nat. *)
@@ -131,6 +140,7 @@ Definition G_Counter_merge c1 c2 :=
 Definition G_Counter_equal (c1 c2 : G_Counter) :=
   ClockMap.Equal c1 c2.
 
+(* Compare two counters. *)
 Definition G_Counter_compare (c1 c2 : G_Counter) :=
   ClockMap.Equal
     (ClockMap.map2 Clock_compare c1 c2) (ClockMap.map2 Clock_true c1 c2).
@@ -187,15 +197,6 @@ Proof.
       destruct (ClockMap.find actor clocks) eqn:factor.
         rewrite ClockMapFacts.add_neq_o; auto. apply Clock_compare_refl. 
         rewrite ClockMapFacts.add_neq_o; auto. apply Clock_compare_refl. 
-Qed.
-
-Lemma leb_max_mono : forall n m,
-  leb n (max n m) = true.
-Proof.
-  intros.
-  generalize dependent m.
-  induction n; induction m; auto with arith; simpl.
-  rewrite leb_correct; auto. rewrite IHn; reflexivity.
 Qed.
 
 Theorem G_Counter_merge_mono : forall c1 c2,
