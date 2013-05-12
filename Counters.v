@@ -324,46 +324,31 @@ Qed.
 (*           (forall (clocks : G_Counter) (actor : ClockMap.key), *)
 (*            G_Counter_compare clocks (G_Counter_incr actor clocks))) *)
 
-(* Record CRDT : Prop := CvRDT *)
-(*                  { *)
-(*                    carrier : Type;  *)
-(*                    merge : carrier -> carrier -> carrier; *)
-(*                    query : carrier -> nat; *)
-(*                    compare: carrier -> carrier -> Prop; *)
-(*                    update: list ((nat -> carrier -> carrier) * *)
-(*                                 (forall clocks actor, compare clocks ((nat -> carrier -> carrier) actor clocks))) -> *)
-(*                    list ((nat -> carrier -> carrier) *  *)
-(*                          (forall clocks actor, compare clocks ((nat -> carrier -> carrier) actor clocks))); *)
-(*                    equal : carrier -> carrier -> Prop; *)
-(*                    merge_idemp : forall x, equal (merge x x) x; *)
-(*                    merge_comm : forall x y, equal (merge x y) (merge y x); *)
-(*                    merge_assoc : forall x y z,  *)
-(*                                    equal (merge x (merge y z)) (merge (merge x y) z); *)
-(*                    update_mono: forall x y, compare x (update y x); *)
-(*                    merge_mono : forall x y, compare x (merge x y) *)
-(*                  }. *)
+Record CRDT : Prop := CvRDT
+                 {
+                   carrier : Type;
+                   merge : carrier -> carrier -> carrier;
+                   query : carrier -> nat;
+                   compare: carrier -> carrier -> Prop;
+                   update: nat -> carrier -> carrier;
+                   equal : carrier -> carrier -> Prop;
+                   merge_idemp : forall x, equal (merge x x) x;
+                   merge_comm : forall x y, equal (merge x y) (merge y x);
+                   merge_assoc : forall x y z,
+                                   equal (merge x (merge y z)) (merge (merge x y) z);
+                   update_mono: forall x y, compare x (update y x);
+                   merge_mono : forall x y, compare x (merge x y)
+                 }.
 
-(* Definition the_G_Counter := CvRDT *)
-(*                   G_Counter  *)
-(*                   G_Counter_merge  *)
-(*                   G_Counter_reveal  *)
-(*                   [ (G_Counter_incr, G_Counter_incr_mono) ] *)
-(*                   G_Counter_compare *)
-(*                   G_Counter_equal *)
-(*                   G_Counter_merge_idempotent *)
-(*                   G_Counter_merge_comm *)
-(*                   G_Counter_merge_assoc *)
-(*                   G_Counter_merge_mono. *)
-
-(* Definition the_PN_Counter := CvRDT *)
-(*                   PN_Counter  *)
-(*                   PN_Counter_merge  *)
-(*                   PN_Counter_reveal  *)
-(*                   PN_Counter_incr  *)
-(*                   PN_Counter_compare *)
-(*                   PN_Counter_equal *)
-(*                   PN_Counter_merge_idempotent *)
-(*                   PN_Counter_merge_comm *)
-(*                   PN_Counter_merge_assoc *)
-(*                   PN_Counter_update_mono *)
-(*                   PN_Counter_merge_mono. *)
+Definition the_G_Counter := CvRDT
+                  G_Counter
+                  G_Counter_merge
+                  G_Counter_reveal
+                  G_Counter_compare
+                  G_Counter_incr
+                  G_Counter_equal
+                  G_Counter_merge_idempotent
+                  G_Counter_merge_comm
+                  G_Counter_merge_assoc
+                  G_Counter_incr_mono
+                  G_Counter_merge_mono.
