@@ -352,3 +352,4 @@ Definition the_G_Counter := CvRDT
                   G_Counter_merge_assoc
                   G_Counter_incr_mono
                   G_Counter_merge_mono.
+
